@@ -1,0 +1,30 @@
+name: Deploy HTML files to GitHub Pages
+
+on:
+  push:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@main
+
+      - name: Move HTML files to release directory
+        run: |
+          mkdir ./release
+          mv ./pkg/main.html ./release/index.html
+          mv ./pkg/main.css ./release/
+          mv ./pkg/main.js ./release/
+          mv ./pkg/canvas.js ./release/
+          mv ./pkg/gamers_world_wasm.js ./release/
+          mv ./pkg/gamers_world_wasm_bg.wasm ./release/
+          
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./path/to/html/files  # 替换为 HTML 文件所在目录
+          destination_dir: .  # 保持根目录结构

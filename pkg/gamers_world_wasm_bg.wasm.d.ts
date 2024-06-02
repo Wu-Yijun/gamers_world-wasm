@@ -1,0 +1,34 @@
+/* tslint:disable */
+/* eslint-disable */
+export const memory: WebAssembly.Memory;
+export function __wbg_cell_free(a: number): void;
+export function __wbg_get_cell_x(a: number): number;
+export function __wbg_set_cell_x(a: number, b: number): void;
+export function __wbg_get_cell_y(a: number): number;
+export function __wbg_set_cell_y(a: number, b: number): void;
+export function __wbg_get_cell_z(a: number): number;
+export function __wbg_set_cell_z(a: number, b: number): void;
+export function __wbg_get_cell_r(a: number): number;
+export function __wbg_set_cell_r(a: number, b: number): void;
+export function __wbg_get_cell_g(a: number): number;
+export function __wbg_set_cell_g(a: number, b: number): void;
+export function __wbg_get_cell_b(a: number): number;
+export function __wbg_set_cell_b(a: number, b: number): void;
+export function __wbg_world_free(a: number): void;
+export function __wbg_get_world_h(a: number): number;
+export function __wbg_set_world_h(a: number, b: number): void;
+export function __wbg_get_world_w(a: number): number;
+export function __wbg_set_world_w(a: number, b: number): void;
+export function world_new(a: number, b: number): number;
+export function world_start(a: number): void;
+export function world_get_vec(a: number): number;
+export function world_get_vec_len(a: number): number;
+export function world_get_indices(a: number): number;
+export function world_get_indices_len(a: number): number;
+export function world_print(a: number, b: number, c: number): void;
+export function world_tick(a: number): void;
+export function world_to_update_map(a: number): number;
+export function world_to_update_index(a: number): number;
+export function __wbindgen_malloc(a: number, b: number): number;
+export function __wbindgen_realloc(a: number, b: number, c: number, d: number): number;
+export function __wbindgen_exn_store(a: number): void;

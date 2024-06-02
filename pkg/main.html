@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Game</title>
+    <!-- main.css -->
+    <link rel="stylesheet" href="main.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/3.4.1/gl-matrix-min.js"></script>
+</head>
+
+<body>
+    <div id="game-wrapper">
+        <canvas id="game" width="800" height="600"></canvas>
+        <canvas id="game2d" width="800" height="600"></canvas>
+    </div>
+    <div id="fps">
+        <span id="fps-value">0</span> FPS
+    </div>
+    <script type="module" src="main.js"></script>
+    <!-- <script>
+        if (window.Worker) {
+            const myWorker = new Worker('worker.js');
+
+            myWorker.onmessage = function (e) {
+                console.log('Main: Message received from worker');
+                alert(e.data);
+            };
+
+            console.log('Main: Posting message to worker');
+            myWorker.postMessage('Hello, Worker!'); // 发送数据给 Worker
+        } else {
+            console.log('Your browser doesn\'t support web workers.');
+        }
+    </script> -->
+
+</html>

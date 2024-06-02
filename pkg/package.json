@@ -1,0 +1,17 @@
+{
+  "name": "gamers_world-wasm",
+  "collaborators": [
+    "Wu-Yijun <wuyijun21@mails.ucas.ac.cn>"
+  ],
+  "version": "0.1.0",
+  "files": [
+    "gamers_world_wasm_bg.wasm",
+    "gamers_world_wasm.js",
+    "gamers_world_wasm.d.ts"
+  ],
+  "module": "gamers_world_wasm.js",
+  "types": "gamers_world_wasm.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

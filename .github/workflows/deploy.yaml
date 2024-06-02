@@ -37,6 +37,7 @@ jobs:
           mv ./pkg/canvas.js ./release/
           mv ./pkg/gamers_world_wasm.js ./release/
           mv ./pkg/gamers_world_wasm_bg.wasm ./release/
+          mv ./pkg/*.png ./release/
       - name: Upload artifact
         uses: actions/upload-pages-artifact@main
         with:

@@ -26,5 +26,5 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./path/to/html/files  # 替换为 HTML 文件所在目录
+          publish_dir: ./release  # 替换为 HTML 文件所在目录
           destination_dir: .  # 保持根目录结构

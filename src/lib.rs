@@ -1,6 +1,6 @@
 mod utils;
+mod map_gen;
 
-use js_sys::Math::random;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -68,12 +68,21 @@ impl World {
         let mut indices = Vec::new();
         for y in 0..h {
             for x in 0..w {
-                indices.push(y * (w + 1) + x);
-                indices.push((y + 1) * (w + 1) + x);
-                indices.push(y * (w + 1) + x + 1);
-                indices.push(y * (w + 1) + x + 1);
-                indices.push((y + 1) * (w + 1) + x);
-                indices.push((y + 1) * (w + 1) + x + 1);
+                if y %2 ==0 {
+                    indices.push(y * (w + 1) + x);
+                    indices.push((y + 1) * (w + 1) + x);
+                    indices.push(y * (w + 1) + x + 1);
+                    indices.push(y * (w + 1) + x + 1);
+                    indices.push((y + 1) * (w + 1) + x);
+                    indices.push((y + 1) * (w + 1) + x + 1);
+                }else{
+                    indices.push(y * (w + 1) + x);
+                    indices.push((y + 1) * (w + 1) + x);
+                    indices.push((y + 1) * (w + 1) + x + 1);
+                    indices.push(y * (w + 1) + x);
+                    indices.push((y + 1) * (w + 1) + x + 1);
+                    indices.push(y * (w + 1) + x + 1);
+                }
             }
         }
         Self {
@@ -85,7 +94,11 @@ impl World {
             index_changed: false,
         }
     }
-    pub fn start(&mut self) {
+    pub fn start(&mut self, seed: u64) {
+        let mut mpg = map_gen::MapGen::new(self.w as f64, self.h as f64);
+        mpg.gen(seed);
+        mpg.with_cell(&mut self.cells);
+        
         self.map_changed = true;
         self.index_changed = true;
     }
@@ -109,13 +122,13 @@ impl World {
     }
 
     pub fn tick(&mut self) {
-        use rand::prelude::*;
-        let mut rng = rand::thread_rng();
-        for i in 1..10000 {
-            let index = rng.gen_range(0..self.cells.len());
-            self.cells[index].z = rng.gen_range(0.0..0.8);
-        }
-        self.map_changed = true;
+        // use rand::prelude::*;
+        // let mut rng = rand::thread_rng();
+        // for i in 1..10000 {
+        //     let index = rng.gen_range(0..self.cells.len());
+        //     self.cells[index].z = rng.gen_range(0.0..0.8);
+        // }
+        // self.map_changed = true;
     }
 
     pub fn to_update_map(&mut self) -> bool {
@@ -133,5 +146,11 @@ impl World {
         } else {
             false
         }
+    }
+}
+
+impl World{
+    fn get_h(){
+        
     }
 }

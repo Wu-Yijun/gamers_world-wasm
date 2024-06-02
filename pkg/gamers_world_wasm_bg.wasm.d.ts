@@ -20,7 +20,7 @@ export function __wbg_set_world_h(a: number, b: number): void;
 export function __wbg_get_world_w(a: number): number;
 export function __wbg_set_world_w(a: number, b: number): void;
 export function world_new(a: number, b: number): number;
-export function world_start(a: number): void;
+export function world_start(a: number, b: number): void;
 export function world_get_vec(a: number): number;
 export function world_get_vec_len(a: number): number;
 export function world_get_indices(a: number): number;

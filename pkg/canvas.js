@@ -45,6 +45,7 @@ const data = {
         y: 0,
         fov: 75.0,
         distance: 10,
+        rotate: 0,
     }
 }
 
@@ -111,6 +112,7 @@ function upadteView() {
     // glMatrix.mat4.lookAt(modelViewMatrix, [0, -2, 3], [0, 0, 0], [0, 1, 0]);
     glMatrix.mat4.lookAt(modelViewMatrix, [0, -2 * data.trans.distance, 3 * data.trans.distance], [0, 0, 0], [0, 1, 0]);
     // console.log(modelViewMatrix);
+    glMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, data.trans.rotate, [0, 0, 1]);
     glMatrix.mat4.translate(modelViewMatrix, modelViewMatrix, [data.trans.x, data.trans.y, 0.0]);
     // console.log(modelViewMatrix);
 
@@ -211,12 +213,13 @@ export function draw() {
     data.gl.drawElements(data.gl.TRIANGLES, data.vertexCount, data.gl.UNSIGNED_INT, data.offset);
 }
 
-export function setTransform(x, y, z, scale) {
+export function setTransform(x, y, z, scale, rotate) {
     data.trans.x = x * 0.1 || 0;
     data.trans.y = y * 0.1 || 0;
     data.trans.z = z * 0.1 || 0;
     data.trans.distance = scale * 10;
-    console.log(data.trans);
+    data.trans.rotate = rotate / 50;
+    // console.log(data.trans);
 
     upadteView()
 }

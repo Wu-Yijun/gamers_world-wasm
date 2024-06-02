@@ -34,8 +34,9 @@ export class World {
 */
   static new(width: number, height: number): World;
 /**
+* @param {bigint} seed
 */
-  start(): void;
+  start(seed: bigint): void;
 /**
 * @returns {number}
 */
@@ -99,7 +100,7 @@ export interface InitOutput {
   readonly __wbg_get_world_w: (a: number) => number;
   readonly __wbg_set_world_w: (a: number, b: number) => void;
   readonly world_new: (a: number, b: number) => number;
-  readonly world_start: (a: number) => void;
+  readonly world_start: (a: number, b: number) => void;
   readonly world_get_vec: (a: number) => number;
   readonly world_get_vec_len: (a: number) => number;
   readonly world_get_indices: (a: number) => number;

@@ -110,18 +110,22 @@ function setTransform() {
         trans.keys = 0;
         trans.keya = 0;
         trans.keyd = 0;
+        trans.keyq = 0;
+        trans.keye = 0;
     } else {
         trans.dt--;
     }
     let dx = trans.keya - trans.keyd;
     let dy = trans.keys - trans.keyw;
-    trans.to_update |= dx != 0 || dy != 0;
+    let dr = trans.keyq - trans.keye;
+    trans.to_update |= dx != 0 || dy != 0 || dr != 0;
     if (trans.to_update) {
         trans.x += dx;
         trans.y += dy;
+        trans.rotate += dr;
         trans.to_update = false;
 
-        webgl.setTransform(trans.x, trans.y, trans.z, trans.scale);
+        webgl.setTransform(trans.x, trans.y, trans.z, trans.scale, trans.rotate);
     }
 }
 
@@ -150,6 +154,11 @@ window.addEventListener("keydown", (e) => {
         case "d":
             trans.keyd = 2;
             break;
+        case "q":
+            trans.keyq = 1;
+            break;
+        case "e":
+            trans.keye = 1;
         default:
             return;
     }
@@ -171,6 +180,12 @@ window.addEventListener("keyup", (e) => {
         case "d":
             trans.keyd = 0;
             break;
+        case "q":
+            trans.keyq = 0;
+            break;
+        case "e":
+            trans.keye = 0;
+            break;
         default:
             return;
     }
@@ -189,10 +204,13 @@ const trans = {
     keys: 0,
     keya: 0,
     keyd: 0,
+    keyq: 0,
+    keye: 0,
     x: 0,
     y: 0,
     z: 0,
     scale: 1,
+    rotate: 0,
     to_update: false,
 };
 
@@ -202,6 +220,7 @@ async function init() {
     webgl.main(gl);
 
     const world = World.new(200, 200);
+    // const world = World.new(4, 4);
     game.world = world;
 
     const cellsPtr = world.get_vec();
@@ -217,7 +236,10 @@ async function init() {
     game.width = world.w;
 
     renderLoop();
-    world.start();
+    
+    let seed = BigInt(Math.round(Math.random() * 10000));
+    // let seed = BigInt(123);
+    world.start(seed);
 }
 
 await init();

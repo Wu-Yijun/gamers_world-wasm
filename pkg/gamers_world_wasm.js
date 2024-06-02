@@ -404,6 +404,15 @@ export class World {
         const ret = wasm.world_to_update_index(this.__wbg_ptr);
         return ret !== 0;
     }
+    /**
+    * @param {number} x
+    * @param {number} y
+    * @returns {number}
+    */
+    get_h(x, y) {
+        const ret = wasm.world_get_h(this.__wbg_ptr, x, y);
+        return ret;
+    }
 }
 
 async function __wbg_load(module, imports) {

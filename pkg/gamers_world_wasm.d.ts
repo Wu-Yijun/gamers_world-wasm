@@ -70,6 +70,12 @@ export class World {
 */
   to_update_index(): boolean;
 /**
+* @param {number} x
+* @param {number} y
+* @returns {number}
+*/
+  get_h(x: number, y: number): number;
+/**
 */
   h: number;
 /**
@@ -109,6 +115,7 @@ export interface InitOutput {
   readonly world_tick: (a: number) => void;
   readonly world_to_update_map: (a: number) => number;
   readonly world_to_update_index: (a: number) => number;
+  readonly world_get_h: (a: number, b: number, c: number) => number;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_exn_store: (a: number) => void;

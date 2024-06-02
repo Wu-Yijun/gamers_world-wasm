@@ -29,6 +29,7 @@ export function world_print(a: number, b: number, c: number): void;
 export function world_tick(a: number): void;
 export function world_to_update_map(a: number): number;
 export function world_to_update_index(a: number): number;
+export function world_get_h(a: number, b: number, c: number): number;
 export function __wbindgen_malloc(a: number, b: number): number;
 export function __wbindgen_realloc(a: number, b: number, c: number, d: number): number;
 export function __wbindgen_exn_store(a: number): void;

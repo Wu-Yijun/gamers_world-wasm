@@ -11,60 +11,6 @@ const ctx = myCanvas2D.getContext('2d');
 const fps_value = document.getElementById("fps-value");
 
 
-function drawTriangle(a, b, c, color) {
-    ctx.fillStyle = '#' + (color + 0x1000000).toString(16).substr(-6);
-    // ctx.setFillColor(color);
-    ctx.beginPath();
-    ctx.moveTo(a.x, a.y);
-    ctx.lineTo(b.x, b.y);
-    ctx.lineTo(c.x, c.y);
-    ctx.fill();
-}
-
-function drawArray(trans, { cells, colors, width, height }) {
-    const scale = trans.scale || 1;
-
-    const cellSize = myCanvas.width / 100 * scale;
-    const cellSizeY = cellSize * Math.sqrt(3) / 2;
-
-    const move_x = (trans.x * scale || 0) + myCanvas.width / 2;
-    const move_y = (trans.y * scale || 0) + myCanvas.height / 2;
-    for (let y = 0; y < height; y++) {
-        const ay = (y - height / 2) * cellSizeY + move_y;
-        if (ay < -2 * cellSizeY || ay > myCanvas.height) {
-            continue;
-        }
-        for (let x = 0; x < width; x++) {
-            const ax = (x - width / 2) * cellSize + move_x;
-            if (ax < -2 * cellSize || ax - cellSize > myCanvas.width) {
-                continue;
-            }
-            const color1 = colors[(y * width + x) * 2] || 0;
-            const color2 = colors[(y * width + x) * 2 + 1] || 0;
-            let a = { x: ax, y: ay };
-            let b = { x: ax + cellSize, y: ay };
-            let c = { x: ax, y: ay + cellSizeY };
-            let d = { x: ax + cellSize, y: ay + cellSizeY };
-            const index = y * (width + 1) + x;
-            a.y += cells[index] * cellSizeY;
-            b.y += cells[index + 1] * cellSizeY;
-            c.y += cells[index + width + 1] * cellSizeY;
-            d.y += cells[index + width + 2] * cellSizeY;
-            if (y % 2 == 0) {
-                c.x += cellSize / 2;
-                d.x += cellSize / 2;
-                drawTriangle(a, b, c, color1);
-                drawTriangle(b, c, d, color2);
-            } else {
-                a.x += cellSize / 2;
-                b.x += cellSize / 2;
-                drawTriangle(a, b, d, color1);
-                drawTriangle(a, c, d, color2);
-            }
-        }
-    }
-}
-
 let lastTime = Date.now();
 function renderLoop() {
     setTransform();
@@ -81,6 +27,13 @@ function renderLoop() {
     // Draw a simple rectangle
     ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
     ctx.fillRect(50, 50, 200, 200);
+
+    // Draw a image
+    if (game.res.ready) {
+        const imgw = 25;
+        const imgh = 50;
+        ctx.drawImage(game.res.img, myCanvas2D.width /2 - imgw/2, myCanvas2D.height /2 - imgh/2, imgw, imgh);
+    }
 
     // Restore the context to its original state
     ctx.restore();
@@ -122,6 +75,8 @@ function setTransform() {
     if (trans.to_update) {
         trans.x += dx;
         trans.y += dy;
+        trans.z = game.world.get_h(trans.x, trans.y);
+        console.log(trans.z);
         trans.rotate += dr;
         trans.to_update = false;
 
@@ -198,6 +153,11 @@ const game = {
     cells: null,
     colors: null,
     world: null,
+
+    res: {
+        ready: false,
+        img: null,
+    },
 };
 const trans = {
     keyw: 0,
@@ -214,10 +174,24 @@ const trans = {
     to_update: false,
 };
 
+function loadResources() {
+    // const res = await fetch('./resources.json');
+    // const data = await res.json();
+    // game.res = data;
+
+    const img = new Image();
+    img.src = './man.png';
+    img.onload = () => {
+        game.res.img =  img;
+        game.res.ready = true;
+    };
+}
+
 async function init() {
 
     onResize();
     webgl.main(gl);
+    loadResources();
 
     const world = World.new(200, 200);
     // const world = World.new(4, 4);
@@ -236,7 +210,7 @@ async function init() {
     game.width = world.w;
 
     renderLoop();
-    
+
     let seed = BigInt(Math.round(Math.random() * 10000));
     // let seed = BigInt(123);
     world.start(seed);

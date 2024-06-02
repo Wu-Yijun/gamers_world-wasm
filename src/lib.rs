@@ -1,5 +1,5 @@
-mod utils;
 mod map_gen;
+mod utils;
 
 use wasm_bindgen::prelude::*;
 
@@ -68,14 +68,14 @@ impl World {
         let mut indices = Vec::new();
         for y in 0..h {
             for x in 0..w {
-                if y %2 ==0 {
+                if y % 2 == 0 {
                     indices.push(y * (w + 1) + x);
                     indices.push((y + 1) * (w + 1) + x);
                     indices.push(y * (w + 1) + x + 1);
                     indices.push(y * (w + 1) + x + 1);
                     indices.push((y + 1) * (w + 1) + x);
                     indices.push((y + 1) * (w + 1) + x + 1);
-                }else{
+                } else {
                     indices.push(y * (w + 1) + x);
                     indices.push((y + 1) * (w + 1) + x);
                     indices.push((y + 1) * (w + 1) + x + 1);
@@ -98,7 +98,7 @@ impl World {
         let mut mpg = map_gen::MapGen::new(self.w as f64, self.h as f64);
         mpg.gen(seed);
         mpg.with_cell(&mut self.cells);
-        
+
         self.map_changed = true;
         self.index_changed = true;
     }
@@ -147,10 +147,45 @@ impl World {
             false
         }
     }
-}
-
-impl World{
-    fn get_h(){
-        
+    pub fn get_h(&self, x: f32, y: f32) -> f32 {
+        let x0 =x;
+        let y0 = y;
+        let w = self.w as i32;
+        let h = self.h as i32;
+        let y = y / 0.75f32.sqrt();
+        let j = y as i32 + h / 2;
+        let dy = y - y.floor();
+        let x = if j % 2 == 0 { x + 0.5 - dy } else { x + dy };
+        let i = x as i32 + w / 2;
+        let dx = x - x.floor();
+        // alert(&format!("x0:{x0},y0:{y0},x:{},y:{},i:{},j:{},dx:{},dy:{}", x, y, i, j, dx, dy));
+        if i < 0 || i > w || j < 0 || j > h {
+            return 0.0;
+        }
+        if j % 2 == 0 {
+            if dx + dy > 1.0 {
+                // triangle 0 w 1
+                self.cells[(j * (w + 1) + i) as usize].z * (1.0 - dx - dy)
+                    + self.cells[((j + 1) * (w + 1) + i) as usize].z * dy
+                    + self.cells[(j * (w + 1) + i + 1) as usize].z * dx
+            } else {
+                // triangle 1 w w+1
+                self.cells[(j * (w + 1) + i + 1) as usize].z * (1.0 - dx)
+                    + self.cells[((j + 1) * (w + 1) + i) as usize].z * (1.0 - dy)
+                    + self.cells[((j + 1) * (w + 1) + i + 1) as usize].z * (dx + dy - 1.0)
+            }
+        } else {
+            if dx < dy {
+                // triangle 0 w w+1
+                self.cells[(j * (w + 1) + i) as usize].z * (1.0 - y)
+                    + self.cells[((j + 1) * (w + 1) + i) as usize].z * (dy - dx)
+                    + self.cells[((j + 1) * (w + 1) + i + 1) as usize].z * x
+            } else {
+                // triangle 0 w w+1
+                self.cells[(j * (w + 1) + i) as usize].z * y
+                    + self.cells[(j * (w + 1) + i + 1) as usize].z * (dx - dy)
+                    + self.cells[((j + 1) * (w + 1) + i + 1) as usize].z * (1.0 - x)
+            }
+        }
     }
 }

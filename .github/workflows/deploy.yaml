@@ -31,13 +31,14 @@ jobs:
       - name: Move HTML files to release directory
         run: |
           mkdir ./release
+          
+          rm -rf ./pkg/files/gamers_world_wasm.d.ts
+          rm -rf ./pkg/files/gamers_world_wasm_bg.wasm.d.ts
+
+          mv ./pkg/files ./release
+          mv ./pkg/res ./release
           mv ./pkg/main.html ./release/index.html
-          mv ./pkg/main.css ./release/
-          mv ./pkg/main.js ./release/
-          mv ./pkg/canvas.js ./release/
-          mv ./pkg/gamers_world_wasm.js ./release/
-          mv ./pkg/gamers_world_wasm_bg.wasm ./release/
-          mv ./pkg/*.png ./release/
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@main
         with:

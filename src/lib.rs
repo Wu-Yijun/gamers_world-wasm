@@ -43,6 +43,9 @@ pub struct World {
 
     entities: Vec<Entity>,
     enemies: Vec<Enemy>,
+
+    // player: (f32, f32, f32),
+    // player_dir: (f32, f32, f32),
 }
 
 #[wasm_bindgen]
@@ -149,8 +152,11 @@ impl World {
             let x = rng.gen_range(-x..x);
             let y = rng.gen_range(-y..y);
             let z = self.get_h(x, y);
-            self.add_entity(x, y, z);
+            self.add_entity(x, y, z, rng.gen_range(1..3));
         }
+
+        // update entities
+        self.entities.retain(|e| !e.to_remove);
     }
 
     pub fn to_update_map(&mut self) -> bool {
@@ -215,20 +221,34 @@ impl World {
         }
     }
 
-    pub fn add_entity(&mut self, x: f32, y: f32, z: f32) {
-        self.entities.push(Entity::new(x, y, z));
+    pub fn add_entity(&mut self, x: f32, y: f32, z: f32, e: isize) {
+        let mut et = Entity::new(x, y, z);
+        et.e = if e == 1 {
+            entity::Ent::Gold
+        } else {
+            entity::Ent::Knife
+        };
+        self.entities.push(et);
     }
 
     pub fn get_entity_len(&self) -> usize {
         self.entities.len()
     }
-    pub fn get_entity(&self, index: usize) -> Entity_Represent {
-        let e = &self.entities[index];
-        Entity_Represent(e.x, e.y, e.z, e.e as usize as isize)
+    pub fn get_entity(&mut self, index: usize, player: &mut player::Player) -> Entity_Represent {
+        let e = &mut self.entities[index];
+        let dx = e.x - player.x;
+        let dy = e.y - player.y;
+        let dz = e.z - player.z;
+        if dx * dx + dy * dy + dz * dz < player.gold_attraction * player.gold_attraction {
+            e.to_remove = true;
+            player.gold += e.gold;
+            player.exp += e.exp;
+        }
+        Entity_Represent(e.x, e.y, e.z, e.e as isize, e.to_remove)
     }
 }
 
 /// Represents a single entity in the game.
-/// (x, y, z, type)
+/// (x, y, z, type, to_remove)
 #[wasm_bindgen]
-pub struct Entity_Represent(pub f32, pub f32, pub f32, pub isize);
+pub struct Entity_Represent(pub f32, pub f32, pub f32, pub isize, pub bool);

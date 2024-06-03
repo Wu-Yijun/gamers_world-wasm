@@ -78,6 +78,9 @@ export class Entity {
   knife: Knife;
 /**
 */
+  to_remove: boolean;
+/**
+*/
   x: number;
 /**
 */
@@ -88,7 +91,7 @@ export class Entity {
 }
 /**
 * Represents a single entity in the game.
-* (x, y, z, type)
+* (x, y, z, type, to_remove)
 */
 export class Entity_Represent {
   free(): void;
@@ -104,6 +107,9 @@ export class Entity_Represent {
 /**
 */
   3: number;
+/**
+*/
+  4: boolean;
 }
 /**
 * 近战武器
@@ -213,6 +219,10 @@ export class Player {
 * 金钱
 */
   gold: number;
+/**
+* 金币吸引半径
+*/
+  gold_attraction: number;
 /**
 * 血量
 */
@@ -326,17 +336,19 @@ export class World {
 * @param {number} x
 * @param {number} y
 * @param {number} z
+* @param {number} e
 */
-  add_entity(x: number, y: number, z: number): void;
+  add_entity(x: number, y: number, z: number, e: number): void;
 /**
 * @returns {number}
 */
   get_entity_len(): number;
 /**
 * @param {number} index
+* @param {Player} player
 * @returns {Entity_Represent}
 */
-  get_entity(index: number): Entity_Represent;
+  get_entity(index: number, player: Player): Entity_Represent;
 /**
 */
   h: number;
@@ -350,6 +362,8 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
   readonly __wbg_entity_free: (a: number) => void;
+  readonly __wbg_get_entity_to_remove: (a: number) => number;
+  readonly __wbg_set_entity_to_remove: (a: number, b: number) => void;
   readonly __wbg_get_entity_x: (a: number) => number;
   readonly __wbg_set_entity_x: (a: number, b: number) => void;
   readonly __wbg_get_entity_y: (a: number) => number;
@@ -360,6 +374,8 @@ export interface InitOutput {
   readonly __wbg_set_entity_e: (a: number, b: number) => void;
   readonly __wbg_get_entity_gold: (a: number) => number;
   readonly __wbg_set_entity_gold: (a: number, b: number) => void;
+  readonly __wbg_get_entity_exp: (a: number) => number;
+  readonly __wbg_set_entity_exp: (a: number, b: number) => void;
   readonly __wbg_get_entity_knife: (a: number) => number;
   readonly __wbg_set_entity_knife: (a: number, b: number) => void;
   readonly entity_new: (a: number, b: number, c: number) => number;
@@ -382,9 +398,7 @@ export interface InitOutput {
   readonly __wbg_get_enchant_eff: (a: number) => number;
   readonly __wbg_set_enchant_eff: (a: number, b: number) => void;
   readonly __wbg_get_knife_damage: (a: number) => number;
-  readonly __wbg_get_entity_exp: (a: number) => number;
   readonly __wbg_set_knife_damage: (a: number, b: number) => void;
-  readonly __wbg_set_entity_exp: (a: number, b: number) => void;
   readonly __wbg_cell_free: (a: number) => void;
   readonly __wbg_get_cell_x: (a: number) => number;
   readonly __wbg_set_cell_x: (a: number, b: number) => void;
@@ -414,12 +428,14 @@ export interface InitOutput {
   readonly world_to_update_map: (a: number) => number;
   readonly world_to_update_index: (a: number) => number;
   readonly world_get_h: (a: number, b: number, c: number) => number;
-  readonly world_add_entity: (a: number, b: number, c: number, d: number) => void;
+  readonly world_add_entity: (a: number, b: number, c: number, d: number, e: number) => void;
   readonly world_get_entity_len: (a: number) => number;
-  readonly world_get_entity: (a: number, b: number) => number;
+  readonly world_get_entity: (a: number, b: number, c: number) => number;
   readonly __wbg_entity_represent_free: (a: number) => void;
   readonly __wbg_get_entity_represent_3: (a: number) => number;
   readonly __wbg_set_entity_represent_3: (a: number, b: number) => void;
+  readonly __wbg_get_entity_represent_4: (a: number) => number;
+  readonly __wbg_set_entity_represent_4: (a: number, b: number) => void;
   readonly __wbg_get_entity_represent_0: (a: number) => number;
   readonly __wbg_get_entity_represent_1: (a: number) => number;
   readonly __wbg_get_entity_represent_2: (a: number) => number;
@@ -467,6 +483,8 @@ export interface InitOutput {
   readonly __wbg_set_player_dex: (a: number, b: number) => void;
   readonly __wbg_get_player_luk: (a: number) => number;
   readonly __wbg_set_player_luk: (a: number, b: number) => void;
+  readonly __wbg_get_player_gold_attraction: (a: number) => number;
+  readonly __wbg_set_player_gold_attraction: (a: number, b: number) => void;
   readonly player_new: () => number;
   readonly player_tick: (a: number, b: number) => void;
   readonly player_move_by: (a: number, b: number, c: number, d: number) => void;

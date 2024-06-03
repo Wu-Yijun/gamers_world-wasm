@@ -7,6 +7,9 @@ const ctxS = myCanvasShadow.getContext('2d');
 
 const info_dom = document.getElementById("info");
 
+const data = {
+    removed_entity: [],
+};
 
 export const player = {
     player: new Player(),
@@ -54,34 +57,67 @@ export function render(trans_scale) {
 function drawEntity(scale) {
     const mat1 = player.webgl.getModelViewMatrix();
     const mat2 = player.webgl.getProjectionMatrix();
-    const px = player.player.x;
-    const py = player.player.y;
-    const pz = player.player.z;
     const hei = ctx.canvas.height / 2;
     const wei = ctx.canvas.width / 2;
-    const gh = 20 * scale;
+    const gh = 17 * scale;
     const gw = 10 * scale;
-    // console.clear()
-    // const hei = 1;
+    const kh = 13 * scale;
+    const kw = 30 * scale;
+
     if (mat1 && mat2) {
         // 只需要 位置 和id 即可
         let num = player.world.get_entity_len();
         for (let i = 0; i < num; i++) {
-            const entity = player.world.get_entity(i);
+            const entity = player.world.get_entity(i, player.player);
             let pos = glMatrix.vec4.fromValues(entity[0], entity[1], entity[2], 1.0);
             glMatrix.vec4.transformMat4(pos, pos, mat1);
             glMatrix.vec4.transformMat4(pos, pos, mat2);
 
+            let x = pos[0] / pos[3] * wei;
+            let y = -pos[1] / pos[3] * hei;
+            let to_hide = pos[2] / pos[3];
+
+            if (entity[4]) {
+                data.removed_entity.push({ x: x, y: y, tick: 20, type: entity[3] });
+                continue;
+            }
+            if (to_hide > 1 || to_hide < 0) {
+                continue;
+            }
             if (entity[3] == 1) { // Gold
                 let img = player.res.gold;
-                let x = pos[0] / pos[3] * wei;
-                let y = -pos[1] / pos[3] * hei;
                 img && ctx.drawImage(img, x - gw / 2, y - gh, gw, gh);
                 ctxS.beginPath();
                 ctxS.ellipse(x, y, 6 * scale, 3 * scale, 0, 0, 2 * Math.PI);
                 ctxS.fill();
             } else if (entity[3] == 2) { //Knife
+                let img = player.res.knife.k1;
+                img && ctx.drawImage(img, x - kw / 2, y - kh, kw, kh);
+                ctxS.beginPath();
+                ctxS.ellipse(x, y, 6 * scale, 3 * scale, 0, 0, 2 * Math.PI);
+                ctxS.fill();
             }
+
+        }
+    }
+
+    // draw removed entity
+    for (let i = 0; i < data.removed_entity.length; i++) {
+        let entity = data.removed_entity[i];
+        if (entity.tick <= 0) {
+            data.removed_entity.splice(i, 1);
+            i--;
+            continue;
+        }
+        entity.tick--;
+        entity.x *= 0.9;
+        entity.y *= 0.9;
+        if (entity.type == 1) {
+            let img = player.res.gold;
+            img && ctx.drawImage(img, entity.x - gw / 2, entity.y - gh, gw, gh);
+        } else if (entity.type == 2) {
+            let img = player.res.knife.k1;
+            img && ctx.drawImage(img, entity.x - kw / 2, entity.y - kh, kw, kh);
         }
     }
 }

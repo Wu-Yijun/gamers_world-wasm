@@ -64,7 +64,11 @@ pub struct Player {
     /// 增加掉落率，增加暴击率，增加抽卡命中率
     pub luk: f64,
 
+    /// 金币吸引半径
+    pub gold_attraction: f32,
+
     //--- Private field ---//
+    /// 冲刺计数器
     dashing: (usize, f32, f32),
 }
 
@@ -95,6 +99,7 @@ impl Player {
             dex: 10.0,
             luk: 10.0,
 
+            gold_attraction: 3.0,
             // private
             dashing: (0, 0.0, 0.0),
         }

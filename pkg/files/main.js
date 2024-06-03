@@ -10,13 +10,17 @@ const gl = myCanvas.getContext('webgl2');
 // const myCanvas2D = document.getElementById('game2d');
 // const ctx = myCanvas2D.getContext('2d');
 
+const game_menu = document.getElementById('game-menu');
+
 const key_hold_threadhold = 100000;
 
 
 const fps_value = document.getElementById("fps-value");
+const frames_value = document.getElementById("frames-value");
 const info_dom = document.getElementById("info");
 
 let lastTime = Date.now();
+var framesValue = 0;
 function renderLoop() {
     if (player.player.is_dashing()) {
         webgl.to_update_view();
@@ -27,9 +31,10 @@ function renderLoop() {
     // update the fps
     fps_value.innerHTML = Math.round(1000 / (Date.now() - lastTime));
     lastTime = Date.now();
+    frames_value.innerText = framesValue++;
 
 
-    game.world.tick();
+    game.world.tick(player.player);
     canvas.tick();
     if (game.world.to_update_map()) {
         webgl.updateVertex(game.cells);
@@ -42,6 +47,11 @@ function renderLoop() {
     canvas.render(trans.scale);
 
     webgl.draw();
+
+    if (game.to_pause) {
+        pauseGame();
+        return;
+    }
     requestAnimationFrame(renderLoop);
 }
 
@@ -51,6 +61,10 @@ function onResize() {
     webgl.windowSizeChangeCallback();
     canvas.onResize();
     webgl.to_update_view();
+
+    if (game.to_pause) {
+        requestAnimationFrame(renderLoop);
+    }
 }
 
 function setTransform() {
@@ -124,6 +138,8 @@ window.addEventListener("keydown", (e) => {
         case "e":
         case "E":
             trans.keye = 1;
+        case "Escape":
+            game.to_pause = true;
         default:
             return;
     }
@@ -172,12 +188,19 @@ document.addEventListener('contextmenu', function (e) {
     webgl.to_update_view();
 });
 
+document.getElementById('startGame').onclick = startGame;
+document.getElementById('resumeGame').onclick = resumeGame;
+document.getElementById('settingGame').onclick = settingGame;
+document.getElementById('aboutGame').onclick = aboutGame;
+document.getElementById('exitGame').onclick = exitGame;
+
 const game = {
     width: 100,
     height: 100,
     cells: null,
     colors: null,
     world: null,
+    to_pause: true,
 
     res: {},
 };
@@ -218,6 +241,45 @@ function loadResources() {
     }
 }
 
+function pauseGame() {
+    game_menu.style.display = 'flex';
+}
+
+function resumeGame() {
+    game_menu.style.display = 'none';
+    game.to_pause = false;
+    requestAnimationFrame(renderLoop);
+}
+
+function startGame() {
+    resumeGame();
+    console.error("Not implemented yet!");
+}
+function settingGame() {
+    console.error("Not implemented yet!");
+}
+
+function aboutGame() {
+    window.open("https://github.com/Wu-Yijun/gamers_world-wasm", "_self");
+}
+
+function exitGame() {
+    // window.open('about:blank',self').close();
+    window.open('about:blank', '_self').close();
+    try {
+        window.opener = null;
+        window.open("", "_self");
+    }catch(e) {
+        console.error(e);
+    }
+    try {
+        window.location.href = "about:blank";
+    }catch(e) {
+        console.error(e);
+    }
+    window.close();
+}
+
 async function init() {
     console.clear();
 
@@ -227,8 +289,8 @@ async function init() {
     webgl.main(gl, player);
     loadResources();
 
-    const world = World.new(200, 200);
-    // const world = World.new(20, 20);
+    // const world = World.new(200, 200);
+    const world = World.new(100, 100);
     game.world = world;
 
     const cellsPtr = world.get_vec();
@@ -250,8 +312,8 @@ async function init() {
 
     renderLoop();
 
-    let seed = BigInt(Math.round(Math.random() * 10000));
-    // let seed = BigInt(124);
+    // let seed = BigInt(Math.round(Math.random() * 10000));
+    let seed = BigInt(776);
     world.start(seed);
     console.log("随机数种子: ", seed);
     player.move_by(0, 0, world);

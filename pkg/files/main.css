@@ -1,4 +1,4 @@
-body{
+body {
     background-color: #f0f0f0;
     font-family: Arial, sans-serif;
     margin: 0;
@@ -6,7 +6,7 @@ body{
     overflow: hidden;
 }
 
-#game-wrapper{
+#game-wrapper {
     position: absolute;
     z-index: -1;
     top: 0;
@@ -15,7 +15,7 @@ body{
     bottom: 0;
 }
 
-#game-wrapper canvas{
+#game-wrapper canvas {
     position: absolute;
     left: 0;
     right: 0;
@@ -27,11 +27,69 @@ body{
     pointer-events: none;
 }
 
-#message{
+#message {
     position: relative;
     margin: 10px;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
     justify-content: center;
+}
+
+#game-menu {
+    display: flex;
+    position: absolute;
+    top: 8%;
+    left: 0;
+    right: 0;
+    bottom: 8%;
+    background-color: #ccca;
+    padding: 8%;
+    padding-top: 0;
+    padding-bottom: 2%;
+    font-size: 4vh;
+    font-family: sans-serif;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+}
+
+#game-menu>div {
+    width: 100%;
+}
+#game-menu>div>div {
+    width: fit-content;
+    margin: auto;
+}
+#game-menu>div:nth-child(1) {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 7vh;
+    padding-bottom: 15px;
+}
+.button{
+    border: 2px solid #f1ffb3;
+    border-radius: 5vh;
+    padding: 2vh;
+    padding-left: 7%;
+    padding-right: 7%;
+    background-color: #f6f6b861;
+    user-select: none;
+    cursor: pointer;
+
+    transition: all 0.3s ease;
+}
+
+.button:hover{
+    background-color: #ffec006b;
+    padding-left: 10%;
+    padding-right: 10%;
+    box-shadow: 0 0 2vh #6a884e;
+}
+
+.button-selector{
+    transition: all 0.6s ease;
+    padding: 1vh;
+}
+.button-selector:hover{
+     background-color: #ffffff36;
 }

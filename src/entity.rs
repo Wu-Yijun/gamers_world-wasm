@@ -3,13 +3,15 @@ use wasm_bindgen::prelude::*;
 #[derive(Debug, Clone)]
 #[wasm_bindgen]
 pub struct Entity {
+    pub to_remove: bool,
     pub x: f32,
     pub y: f32,
     pub z: f32,
     pub e: Ent,
-    pub gold: usize,
+    pub gold: u32,
     pub exp: f64,
     pub knife: Knife,
+
 }
 
 impl Default for Entity {
@@ -22,6 +24,7 @@ impl Default for Entity {
             gold: 5,
             exp: 2.0,
             knife: Knife::default(),
+            to_remove: false,
         }
     }
 }
@@ -37,6 +40,7 @@ impl Entity {
             gold: 5,
             exp: 2.0,
             knife: Knife::default(),
+            to_remove: false,
         }
     }
 }
@@ -48,6 +52,7 @@ impl Entity {
 }
 
 #[wasm_bindgen]
+#[repr(isize)]
 #[derive(Debug, Clone, Copy, Default)]
 pub enum Ent {
     NULL = 0,

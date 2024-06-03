@@ -422,6 +422,19 @@ export class Entity {
         wasm.__wbg_entity_free(ptr);
     }
     /**
+    * @returns {boolean}
+    */
+    get to_remove() {
+        const ret = wasm.__wbg_get_entity_to_remove(this.__wbg_ptr);
+        return ret !== 0;
+    }
+    /**
+    * @param {boolean} arg0
+    */
+    set to_remove(arg0) {
+        wasm.__wbg_set_entity_to_remove(this.__wbg_ptr, arg0);
+    }
+    /**
     * @returns {number}
     */
     get x() {
@@ -490,14 +503,14 @@ export class Entity {
     * @returns {number}
     */
     get exp() {
-        const ret = wasm.__wbg_get_enchant_eff(this.__wbg_ptr);
+        const ret = wasm.__wbg_get_entity_exp(this.__wbg_ptr);
         return ret;
     }
     /**
     * @param {number} arg0
     */
     set exp(arg0) {
-        wasm.__wbg_set_enchant_eff(this.__wbg_ptr, arg0);
+        wasm.__wbg_set_entity_exp(this.__wbg_ptr, arg0);
     }
     /**
     * @returns {Knife}
@@ -531,7 +544,7 @@ const Entity_RepresentFinalization = (typeof FinalizationRegistry === 'undefined
     : new FinalizationRegistry(ptr => wasm.__wbg_entity_represent_free(ptr >>> 0));
 /**
 * Represents a single entity in the game.
-* (x, y, z, type)
+* (x, y, z, type, to_remove)
 */
 export class Entity_Represent {
 
@@ -605,6 +618,19 @@ export class Entity_Represent {
     */
     set 3(arg0) {
         wasm.__wbg_set_entity_represent_3(this.__wbg_ptr, arg0);
+    }
+    /**
+    * @returns {boolean}
+    */
+    get 4() {
+        const ret = wasm.__wbg_get_entity_represent_4(this.__wbg_ptr);
+        return ret !== 0;
+    }
+    /**
+    * @param {boolean} arg0
+    */
+    set 4(arg0) {
+        wasm.__wbg_set_entity_represent_4(this.__wbg_ptr, arg0);
     }
 }
 
@@ -1114,6 +1140,21 @@ export class Player {
         wasm.__wbg_set_player_luk(this.__wbg_ptr, arg0);
     }
     /**
+    * 金币吸引半径
+    * @returns {number}
+    */
+    get gold_attraction() {
+        const ret = wasm.__wbg_get_player_gold_attraction(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * 金币吸引半径
+    * @param {number} arg0
+    */
+    set gold_attraction(arg0) {
+        wasm.__wbg_set_player_gold_attraction(this.__wbg_ptr, arg0);
+    }
+    /**
     * @returns {Player}
     */
     static new() {
@@ -1319,9 +1360,10 @@ export class World {
     * @param {number} x
     * @param {number} y
     * @param {number} z
+    * @param {number} e
     */
-    add_entity(x, y, z) {
-        wasm.world_add_entity(this.__wbg_ptr, x, y, z);
+    add_entity(x, y, z, e) {
+        wasm.world_add_entity(this.__wbg_ptr, x, y, z, e);
     }
     /**
     * @returns {number}
@@ -1332,10 +1374,12 @@ export class World {
     }
     /**
     * @param {number} index
+    * @param {Player} player
     * @returns {Entity_Represent}
     */
-    get_entity(index) {
-        const ret = wasm.world_get_entity(this.__wbg_ptr, index);
+    get_entity(index, player) {
+        _assertClass(player, Player);
+        const ret = wasm.world_get_entity(this.__wbg_ptr, index, player.__wbg_ptr);
         return Entity_Represent.__wrap(ret);
     }
 }

@@ -32,7 +32,7 @@ function renderLoop() {
     if (game.res.ready) {
         const imgw = 25;
         const imgh = 50;
-        ctx.drawImage(game.res.img, myCanvas2D.width /2 - imgw/2, myCanvas2D.height /2 - imgh/2, imgw, imgh);
+        ctx.drawImage(game.res.img, myCanvas2D.width / 2 - imgw / 2, myCanvas2D.height / 2 - imgh / 2, imgw, imgh);
     }
 
     // Restore the context to its original state
@@ -75,11 +75,13 @@ function setTransform() {
     if (trans.to_update) {
         trans.x += dx;
         trans.y += dy;
-        trans.z = game.world.get_h(trans.x, trans.y);
-        console.log(trans.z);
         trans.rotate += dr;
         trans.to_update = false;
 
+        let ts = webgl.getTransform();
+        trans.z = game.world.get_h(ts.x, ts.y);
+        // console.log(ts.x, ts.y, trans.z);
+        document.getElementById("info").innerText = `x: ${ts.x}, y: ${ts.y}, z: ${trans.z}`;
         webgl.setTransform(trans.x, trans.y, trans.z, trans.scale, trans.rotate);
     }
 }
@@ -182,7 +184,7 @@ function loadResources() {
     const img = new Image();
     img.src = './man.png';
     img.onload = () => {
-        game.res.img =  img;
+        game.res.img = img;
         game.res.ready = true;
     };
 }
@@ -211,8 +213,8 @@ async function init() {
 
     renderLoop();
 
-    let seed = BigInt(Math.round(Math.random() * 10000));
-    // let seed = BigInt(123);
+    // let seed = BigInt(Math.round(Math.random() * 10000));
+    let seed = BigInt(124);
     world.start(seed);
 }
 

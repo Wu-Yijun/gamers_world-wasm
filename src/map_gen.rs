@@ -216,7 +216,8 @@ impl MapGen {
             // phong-like model
             // diff: light-norm    roughness
             let diff =
-                (l.0 * norm.0 + l.1 * norm.1 + l.2 * norm.2).max(0.0) * (roughness + 0.5) * 0.7 + 0.5;
+                (l.0 * norm.0 + l.1 * norm.1 + l.2 * norm.2).max(0.0) * (roughness + 0.5) * 0.7
+                    + 0.5;
             // spec: dir_s-norm
             let spec = (dir_s.0 * norm.0 + dir_s.1 * norm.1 + dir_s.2 * norm.2)
                 .max(0.0)
@@ -329,7 +330,7 @@ impl MapGen {
         let z = self.get_h(x as f64, y as f64);
         let zx = self.get_h(x as f64 + 0.1, y as f64) - z;
         let zy = self.get_h(x as f64, y as f64 + 0.1) - z;
-        let pos = (x, y, z);
+        let pos = (x, y, z - self.sea_level);
         let norm = normalizef64(-zx, -zy, 0.1f64);
         let region = if z < self.sea_level {
             if z < self.ocean_level {
@@ -374,11 +375,26 @@ fn normalizef64(x: f64, y: f64, z: f64) -> (f64, f64, f64) {
 
 #[test]
 fn test() {
-    let mut map = MapGen::new(200.0, 200.0);
-    map.gen(123);
-    let mut wd = World::new(3, 3);
-
-    map.with_cell(&mut wd.cells);
+    let mut wd = World::new(4, 4);
+    wd.start(124);
 
     println!("{:#?}", wd.cells);
+
+    // println!("{:#?}", wd.get_h(0.46, 0.0));
+    // println!("{:#?}", wd.get_h(0.47, 0.0));
+    // println!("{:#?}", wd.get_h(0.48, 0.0));
+    // println!("{:#?}", wd.get_h(0.49, 0.0));
+    // println!("{:#?}", wd.get_h(0.50, 0.0));
+    // println!("{:#?}", wd.get_h(0.51, 0.0));
+    // println!("{:#?}", wd.get_h(0.6, 0.0));
+    // println!("{:#?}", wd.get_h(0.9, 0.0));
+    // println!("{:#?}", wd.get_h(1.4, 0.0));
+    println!("{:#?}", wd.get_h(-0.64, -0.82));
+    println!("{:#?}", wd.get_h(-0.64, -0.84));
+    println!("{:#?}", wd.get_h(-0.64, -0.86));
+    println!("{:#?}", wd.get_h(-0.64, -0.865));
+    println!("{:#?}", wd.get_h(-0.64, -0.87));
+    println!("{:#?}", wd.get_h(-0.64, -0.875));
+    println!("{:#?}", wd.get_h(-0.64, -0.88));
+    println!("{:#?}", wd.get_h(-0.64, -0.90));
 }

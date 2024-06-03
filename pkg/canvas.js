@@ -114,7 +114,7 @@ function upadteView() {
     glMatrix.mat4.lookAt(modelViewMatrix, [0, -2 * data.trans.distance, 3 * data.trans.distance], [0, 0, 0], [0, 1, 0]);
     // console.log(modelViewMatrix);
     glMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, data.trans.rotate, [0, 0, 1]);
-    glMatrix.mat4.translate(modelViewMatrix, modelViewMatrix, [data.trans.x, data.trans.y, -data.trans.z]);
+    glMatrix.mat4.translate(modelViewMatrix, modelViewMatrix, [-data.trans.x, -data.trans.y, -data.trans.z]);
     // console.log(modelViewMatrix);
 
     // Set the shader uniforms
@@ -215,12 +215,11 @@ export function draw() {
 }
 
 export function setTransform(x, y, z, scale, rotate) {
-    data.trans.x = x * 0.1 || 0;
-    data.trans.y = y * 0.1 || 0;
+    data.trans.x = -x * 0.1 || 0;
+    data.trans.y = -y * 0.1 || 0;
     data.trans.z = z || 0;
     data.trans.distance = scale * 10;
     data.trans.rotate = rotate / 50;
-    // console.log(data.trans);
 
     upadteView()
 }
@@ -280,4 +279,9 @@ export function updateIndex(indices) {
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.DYNAMIC_DRAW);
 
     data.vertexCount = indices.length;
+}
+
+
+export function getTransform() {
+    return data.trans;
 }

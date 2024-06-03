@@ -13,25 +13,12 @@
         <canvas id="game" width="800" height="600"></canvas>
         <canvas id="game2d" width="800" height="600"></canvas>
     </div>
-    <div id="fps">
-        <span id="fps-value">0</span> FPS
+    <div id="message">
+        <div id="fps">
+            <span id="fps-value">0</span> FPS
+        </div>
+        <div id="info"></div>
     </div>
-    <div id="info"></div>
     <script type="module" src="./files/main.js"></script>
-    <!-- <script>
-        if (window.Worker) {
-            const myWorker = new Worker('worker.js');
-
-            myWorker.onmessage = function (e) {
-                console.log('Main: Message received from worker');
-                alert(e.data);
-            };
-
-            console.log('Main: Posting message to worker');
-            myWorker.postMessage('Hello, Worker!'); // 发送数据给 Worker
-        } else {
-            console.log('Your browser doesn\'t support web workers.');
-        }
-    </script> -->
 
 </html>

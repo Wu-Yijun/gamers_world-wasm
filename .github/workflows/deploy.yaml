@@ -32,8 +32,7 @@ jobs:
         run: |
           mkdir ./release
           
-          rm -rf ./pkg/files/gamers_world_wasm.d.ts
-          rm -rf ./pkg/files/gamers_world_wasm_bg.wasm.d.ts
+          rm -rf ./pkg/files/*.d.ts
 
           mv ./pkg/files ./release
           mv ./pkg/res ./release

@@ -177,6 +177,13 @@ function getInt32Memory0() {
     return cachedInt32Memory0;
 }
 
+function _assertClass(instance, klass) {
+    if (!(instance instanceof klass)) {
+        throw new Error(`expected instance of ${klass.name}`);
+    }
+    return instance.ptr;
+}
+
 function handleError(f, args) {
     try {
         return f.apply(this, args);
@@ -280,6 +287,428 @@ export class Cell {
     */
     set b(arg0) {
         wasm.__wbg_set_cell_b(this.__wbg_ptr, arg0);
+    }
+}
+
+const PlayerFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_player_free(ptr >>> 0));
+/**
+*/
+export class Player {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(Player.prototype);
+        obj.__wbg_ptr = ptr;
+        PlayerFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        PlayerFinalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_player_free(ptr);
+    }
+    /**
+    * x 位置
+    * @returns {number}
+    */
+    get x() {
+        const ret = wasm.__wbg_get_player_x(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * x 位置
+    * @param {number} arg0
+    */
+    set x(arg0) {
+        wasm.__wbg_set_player_x(this.__wbg_ptr, arg0);
+    }
+    /**
+    * y 位置
+    * @returns {number}
+    */
+    get y() {
+        const ret = wasm.__wbg_get_player_y(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * y 位置
+    * @param {number} arg0
+    */
+    set y(arg0) {
+        wasm.__wbg_set_player_y(this.__wbg_ptr, arg0);
+    }
+    /**
+    * z 位置
+    * @returns {number}
+    */
+    get z() {
+        const ret = wasm.__wbg_get_player_z(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * z 位置
+    * @param {number} arg0
+    */
+    set z(arg0) {
+        wasm.__wbg_set_player_z(this.__wbg_ptr, arg0);
+    }
+    /**
+    * 等级
+    * @returns {number}
+    */
+    get lv() {
+        const ret = wasm.__wbg_get_player_lv(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+    * 等级
+    * @param {number} arg0
+    */
+    set lv(arg0) {
+        wasm.__wbg_set_player_lv(this.__wbg_ptr, arg0);
+    }
+    /**
+    * 经验值
+    * @returns {number}
+    */
+    get exp() {
+        const ret = wasm.__wbg_get_player_exp(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * 经验值
+    * @param {number} arg0
+    */
+    set exp(arg0) {
+        wasm.__wbg_set_player_exp(this.__wbg_ptr, arg0);
+    }
+    /**
+    * 每一级升级所需经验
+    * 一般设置为 lv * 10
+    * @returns {number}
+    */
+    get exp_max() {
+        const ret = wasm.__wbg_get_player_exp_max(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * 每一级升级所需经验
+    * 一般设置为 lv * 10
+    * @param {number} arg0
+    */
+    set exp_max(arg0) {
+        wasm.__wbg_set_player_exp_max(this.__wbg_ptr, arg0);
+    }
+    /**
+    * 金钱
+    * @returns {number}
+    */
+    get gold() {
+        const ret = wasm.__wbg_get_player_gold(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+    * 金钱
+    * @param {number} arg0
+    */
+    set gold(arg0) {
+        wasm.__wbg_set_player_gold(this.__wbg_ptr, arg0);
+    }
+    /**
+    * 血量
+    * @returns {number}
+    */
+    get hp() {
+        const ret = wasm.__wbg_get_player_hp(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * 血量
+    * @param {number} arg0
+    */
+    set hp(arg0) {
+        wasm.__wbg_set_player_hp(this.__wbg_ptr, arg0);
+    }
+    /**
+    * 最大血量
+    * @returns {number}
+    */
+    get hp_max() {
+        const ret = wasm.__wbg_get_player_hp_max(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * 最大血量
+    * @param {number} arg0
+    */
+    set hp_max(arg0) {
+        wasm.__wbg_set_player_hp_max(this.__wbg_ptr, arg0);
+    }
+    /**
+    * 蓝量
+    * @returns {number}
+    */
+    get mp() {
+        const ret = wasm.__wbg_get_player_mp(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * 蓝量
+    * @param {number} arg0
+    */
+    set mp(arg0) {
+        wasm.__wbg_set_player_mp(this.__wbg_ptr, arg0);
+    }
+    /**
+    * 最大蓝量
+    * @returns {number}
+    */
+    get mp_max() {
+        const ret = wasm.__wbg_get_player_mp_max(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * 最大蓝量
+    * @param {number} arg0
+    */
+    set mp_max(arg0) {
+        wasm.__wbg_set_player_mp_max(this.__wbg_ptr, arg0);
+    }
+    /**
+    * 耐力
+    * @returns {number}
+    */
+    get sp() {
+        const ret = wasm.__wbg_get_player_sp(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * 耐力
+    * @param {number} arg0
+    */
+    set sp(arg0) {
+        wasm.__wbg_set_player_sp(this.__wbg_ptr, arg0);
+    }
+    /**
+    * 最大耐力
+    * @returns {number}
+    */
+    get sp_max() {
+        const ret = wasm.__wbg_get_player_sp_max(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * 最大耐力
+    * @param {number} arg0
+    */
+    set sp_max(arg0) {
+        wasm.__wbg_set_player_sp_max(this.__wbg_ptr, arg0);
+    }
+    /**
+    * 攻击力
+    * 攻击时伤害加成
+    * @returns {number}
+    */
+    get atk() {
+        const ret = wasm.__wbg_get_player_atk(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * 攻击力
+    * 攻击时伤害加成
+    * @param {number} arg0
+    */
+    set atk(arg0) {
+        wasm.__wbg_set_player_atk(this.__wbg_ptr, arg0);
+    }
+    /**
+    * 防御力
+    * 受伤时减轻伤害
+    * @returns {number}
+    */
+    get def() {
+        const ret = wasm.__wbg_get_player_def(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * 防御力
+    * 受伤时减轻伤害
+    * @param {number} arg0
+    */
+    set def(arg0) {
+        wasm.__wbg_set_player_def(this.__wbg_ptr, arg0);
+    }
+    /**
+    * 智力
+    * 增强魔法伤害，增强魔法减伤，增加魔力回复速率
+    * @returns {number}
+    */
+    get int() {
+        const ret = wasm.__wbg_get_player_int(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * 智力
+    * 增强魔法伤害，增强魔法减伤，增加魔力回复速率
+    * @param {number} arg0
+    */
+    set int(arg0) {
+        wasm.__wbg_set_player_int(this.__wbg_ptr, arg0);
+    }
+    /**
+    * 力量
+    * 增加移动速度，负重，体力和血量回复速度
+    * 增加攻击速度
+    * @returns {number}
+    */
+    get str() {
+        const ret = wasm.__wbg_get_player_str(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * 力量
+    * 增加移动速度，负重，体力和血量回复速度
+    * 增加攻击速度
+    * @param {number} arg0
+    */
+    set str(arg0) {
+        wasm.__wbg_set_player_str(this.__wbg_ptr, arg0);
+    }
+    /**
+    * 敏捷
+    * 增加闪避率，增加暴击率
+    * 增加攻击速度
+    * 增加移动速度，增加闪现距离（同时增加体力消耗）
+    * @returns {number}
+    */
+    get agi() {
+        const ret = wasm.__wbg_get_player_agi(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * 敏捷
+    * 增加闪避率，增加暴击率
+    * 增加攻击速度
+    * 增加移动速度，增加闪现距离（同时增加体力消耗）
+    * @param {number} arg0
+    */
+    set agi(arg0) {
+        wasm.__wbg_set_player_agi(this.__wbg_ptr, arg0);
+    }
+    /**
+    * 灵巧
+    * 增加命中率，增加暴击伤害
+    * 增加闪现距离（同时增加体力消耗）
+    * @returns {number}
+    */
+    get dex() {
+        const ret = wasm.__wbg_get_player_dex(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * 灵巧
+    * 增加命中率，增加暴击伤害
+    * 增加闪现距离（同时增加体力消耗）
+    * @param {number} arg0
+    */
+    set dex(arg0) {
+        wasm.__wbg_set_player_dex(this.__wbg_ptr, arg0);
+    }
+    /**
+    * 幸运
+    * 增加掉落率，增加暴击率，增加抽卡命中率
+    * @returns {number}
+    */
+    get luk() {
+        const ret = wasm.__wbg_get_player_luk(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * 幸运
+    * 增加掉落率，增加暴击率，增加抽卡命中率
+    * @param {number} arg0
+    */
+    set luk(arg0) {
+        wasm.__wbg_set_player_luk(this.__wbg_ptr, arg0);
+    }
+    /**
+    * @returns {Player}
+    */
+    static new() {
+        const ret = wasm.player_new();
+        return Player.__wrap(ret);
+    }
+    /**
+    * @param {World} world
+    */
+    tick(world) {
+        _assertClass(world, World);
+        wasm.player_tick(this.__wbg_ptr, world.__wbg_ptr);
+    }
+    /**
+    * @param {number} dx
+    * @param {number} dy
+    * @returns {string}
+    */
+    move_by(dx, dy) {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.player_move_by(retptr, this.__wbg_ptr, dx, dy);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            deferred1_0 = r0;
+            deferred1_1 = r1;
+            return getStringFromWasm0(r0, r1);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+    * @param {number} dir_x
+    * @param {number} dir_y
+    * @returns {string}
+    */
+    dash(dir_x, dir_y) {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.player_dash(retptr, this.__wbg_ptr, dir_x, dir_y);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            deferred1_0 = r0;
+            deferred1_1 = r1;
+            return getStringFromWasm0(r0, r1);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+    * @returns {boolean}
+    */
+    is_dashing() {
+        const ret = wasm.player_is_dashing(this.__wbg_ptr);
+        return ret !== 0;
+    }
+    /**
+    * @returns {number}
+    */
+    get_dash_deg() {
+        const ret = wasm.player_get_dash_deg(this.__wbg_ptr);
+        return ret;
     }
 }
 

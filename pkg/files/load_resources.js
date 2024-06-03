@@ -30,14 +30,19 @@ async function load_imgs(key, urls) {
     }
 }
 
-load_imgs('man',
-    {
-        s1: "../res/man/step (1).png",
-        s2: "../res/man/step (2).png",
-        s3: "../res/man/step (3).png",
-        s4: "../res/man/step (4).png",
-    }
-).then(() => {
-    postMessage({ is_ready: true });
-});
+async function load_all() {
+    await load_imgs('man',
+        {
+            s1: "../res/man/step (1).png",
+            s2: "../res/man/step (2).png",
+            s3: "../res/man/step (3).png",
+            s4: "../res/man/step (4).png",
+        }
+    );
+    await load_img('manDash',"../res/man/dash.png")
+}
+
+load_all().then(()=>{
+    postMessage({is_ready: true})
+})
 

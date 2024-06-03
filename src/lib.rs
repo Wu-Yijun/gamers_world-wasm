@@ -1,5 +1,6 @@
 mod map_gen;
 mod utils;
+mod player;
 
 use wasm_bindgen::prelude::*;
 
@@ -26,7 +27,7 @@ struct Cell {
 }
 
 #[wasm_bindgen]
-struct World {
+pub struct World {
     pub h: usize,
     pub w: usize,
     cells: Vec<Cell>,

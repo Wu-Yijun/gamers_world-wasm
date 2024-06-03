@@ -1,287 +1,149 @@
+import { Player } from "./gamers_world_wasm.js";
 
-// Vertex shader program
-const vsSource = `
-    attribute vec3 aVertexPosition;
-    attribute vec3 aVertexColor;
-    varying lowp vec3 vColor;
+const myCanvas2D = document.getElementById('game2d');
+const ctx = myCanvas2D.getContext('2d');
 
-    uniform mat4 uModelViewMatrix;
-    uniform mat4 uProjectionMatrix;
+const info_dom = document.getElementById("info");
 
-    void main(void) {
-        gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(aVertexPosition, 1.0);
-        vColor = aVertexColor;
+
+export const player = {
+    player: new Player(),
+    dir: 1,
+    step_list: ['s1', 's2', 's3', 's4'],
+    step: 3.9,
+    ui: 1.0,
+
+    colors: {
+        hp: '#e60012',
+        hp_max: '#7d0000',
+        mp: '#0f68e1',
+        mp_max: '#2e3188',
+        sp: '#f39800',
+        sp_max: '#834e00',
+        exp: '#00ff00',
+        exp_max: '#00561f',
     }
-`;
-
-// Fragment shader program
-const fsSource = `
-varying lowp vec3 vColor;
-
-void main(void) {
-    gl_FragColor = vec4(vColor, 1.0);
-}
-`;
+};
 
 
-const data = {
-    gl: null,
-    programInfo: {
-        program: null,
-        attribLocations: {
-            vertexPosition: null,
-            vertexColor: null,
-        },
-        uniformLocations: {
-            projectionMatrix: null,
-            modelViewMatrix: null,
+export function render(res, trans) {
+    const ui = player.ui;
+
+    // // Set up for 2D drawing
+    // ctx.save();
+    ctx.resetTransform();
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+    // Draw hp
+    ctx.translate(0, 5 * ui);
+    const hp = player.player.hp;
+    const hp_max = player.player.hp_max;
+    ctx.fillStyle = player.colors.hp_max;
+    ctx.font = Math.round(ui * 2.5) + "px sans-serif";
+    ctx.fillText("HP", 5 * ui, 2 * ui);
+    ctx.fillRect(10 * ui, 0, ui * hp_max / 4, 2 * ui);
+    ctx.fillText(`${Math.round(hp)}/${Math.round(hp_max)}`, (14 + hp_max / 4) * ui, 2 * ui);
+    ctx.fillStyle = player.colors.hp;
+    ctx.fillRect(10.1 * ui, 0.1 * ui, ui * (hp / 4 - 0.2), 1.8 * ui);
+
+    // Draw mp
+    ctx.translate(0, 5 * ui);
+    const mp = player.player.mp;
+    const mp_max = player.player.mp_max;
+    ctx.fillStyle = player.colors.mp_max;
+    ctx.font = Math.round(ui * 2.5) + "px sans-serif";
+    ctx.fillText("MP", 5 * ui, 2 * ui);
+    ctx.fillRect(10 * ui, 0, ui * mp_max / 4, 2 * ui);
+    ctx.fillText(`${Math.round(mp)}/${Math.round(mp_max)}`, (14 + mp_max / 4) * ui, 2 * ui);
+    ctx.fillStyle = player.colors.mp;
+    ctx.fillRect(10.1 * ui, 0.1 * ui, ui * (mp / 4 - 0.2), 1.8 * ui);
+
+    // Draw sp
+    ctx.translate(0, 5 * ui);
+    const sp = player.player.sp;
+    const sp_max = player.player.sp_max;
+    ctx.fillStyle = player.colors.sp_max;
+    ctx.font = Math.round(ui * 2.5) + "px sans-serif";
+    ctx.fillText("SP", 5 * ui, 2 * ui);
+    ctx.fillRect(10 * ui, 0, ui * sp_max / 4, 2 * ui);
+    ctx.fillText(`${Math.round(sp)}/${Math.round(sp_max)}`, (14 + sp_max / 4) * ui, 2 * ui);
+    ctx.fillStyle = player.colors.sp;
+    ctx.fillRect(10.1 * ui, 0.1 * ui, ui * (sp / 4 - 0.2), 1.8 * ui);
+
+    // Draw exp at the centre bottum of screen
+    const level = player.player.lv;
+    const exp = player.player.exp;
+    const exp_max = player.player.exp_max;
+    ctx.resetTransform();
+    ctx.translate(ctx.canvas.width / 2, ctx.canvas.height);
+    ctx.fillStyle = 'white';
+    ctx.fillRect(-80.2 * ui, -10.2 * ui, 160.4 * ui, ui * 1.4);
+    ctx.fillStyle = player.colors.exp_max;
+    ctx.fillRect(-80 * ui, -10 * ui, 160 * ui, ui);
+    ctx.fillStyle = player.colors.exp;
+    ctx.fillText(`Lv: ${level} (Exp: ${Math.floor(exp)})`, - 10 * ui, -12 * ui);
+    ctx.fillRect(-80 * ui, -10 * ui, ui * 160 * exp / exp_max, ui);
+
+    // Draw the man
+    ctx.resetTransform();
+    if (res.man) {
+        const scale = ui * 0.1 / (trans.scale + 0.05);
+        ctx.translate(myCanvas2D.width / 2, myCanvas2D.height / 2);
+        if (player.player.is_dashing()) {
+            const imgw = 70 * scale;
+            const imgh = 30 * scale;
+            let ig = res.manDash;
+            let deg = player.player.get_dash_deg();
+            ctx.rotate(deg);
+            ig && ctx.drawImage(ig, 0, -imgh / 2, imgw, imgh);
+        } else {
+            const imgw = 25 * scale;
+            const imgh = 50 * scale;
+            if (player.dir == 1) {
+                ctx.scale(-1, 1);
+            }
+            let ig = res.man[player.step_list[Math.floor(player.step)]];
+            ig && ctx.drawImage(ig, - imgw / 2, - imgh, imgw, imgh);
         }
-    },
-    vertexCount: 0,
-    type: 0,
-    offset: 0,
-    trans: {
-        x: 0,
-        y: 0,
-        z: 0,
-        fov: 75.0,
-        distance: 10,
-        rotate: 0,
+    }
+
+    // Restore the context to its original state
+    // ctx.restore();
+
+}
+
+export function onResize() {
+    myCanvas2D.width = window.innerWidth;
+    myCanvas2D.height = window.innerHeight;
+    player.ui = window.innerHeight / 150;
+}
+
+export function setTransform(dx, dy, dr) {
+    if (dx != 0) {
+        player.dir = dx > 0 ? 1 : -1;
+    }
+    if (dx != 0 || dy != 0) {
+        player.step += 0.12;
+        if (player.step >= 4) {
+            player.step = 0;
+        }
+
+        info_dom.innerText = player.player.move_by(dx, dy);
     }
 }
 
-
-
-// Initialize a shader program
-function initShaderProgram(gl, vsSource, fsSource) {
-    const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
-    const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
-
-    // Create the shader program
-    const shaderProgram = gl.createProgram();
-    gl.attachShader(shaderProgram, vertexShader);
-    gl.attachShader(shaderProgram, fragmentShader);
-    gl.linkProgram(shaderProgram);
-
-    // Check if it linked correctly
-    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-        alert('Unable to initialize the shader program: ' + gl.getProgramInfoLog(shaderProgram));
-        return null;
+export function tick() {
+    player.step += 0.01;
+    if (player.step >= 4) {
+        player.step = 0;
     }
 
-    return shaderProgram;
+    player.player.tick(player.world);
 }
 
-// Creates a shader of the given type, uploads the source and compiles it.
-function loadShader(gl, type, source) {
-    const shader = gl.createShader(type);
-
-    // Send the source to the shader object
-    gl.shaderSource(shader, source);
-
-    // Compile the shader program
-    gl.compileShader(shader);
-
-    // See if it compiled successfully
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        alert('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(shader));
-        gl.deleteShader(shader);
-        return null;
+export function dash(dx, dy) {
+    if (dx == 0 && dy == 0) {
+        dx = player.dir;
     }
-
-    return shader;
-}
-
-
-function upadteView() {
-    const gl = data.gl;
-
-    // Create a perspective matrix, a special matrix that is used to simulate the distortion of perspective in a camera.
-    const fieldOfView = data.trans.fov * Math.PI / 180;   // in radians
-    const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-    const zNear = 0.1;
-    const zFar = 1000.0;
-    const projectionMatrix = glMatrix.mat4.create();
-
-    // Note: glmatrix.js always has the first argument as the destination to receive the result.
-    glMatrix.mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
-
-    // Set the drawing position to the identity point, which is the center of the scene.
-    const modelViewMatrix = glMatrix.mat4.create();
-
-    // Move the drawing position to where we want to start drawing the square.
-    // glMatrix.mat4.lookAt(modelViewMatrix, [0, -2, 3], [0, 0, 0], [0, 1, 0]);
-    glMatrix.mat4.lookAt(modelViewMatrix, [0, -2 * data.trans.distance, 3 * data.trans.distance], [0, 0, 0], [0, 1, 0]);
-    // console.log(modelViewMatrix);
-    glMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, data.trans.rotate, [0, 0, 1]);
-    glMatrix.mat4.translate(modelViewMatrix, modelViewMatrix, [-data.trans.x, -data.trans.y, -data.trans.z]);
-    // console.log(modelViewMatrix);
-
-    // Set the shader uniforms
-    gl.uniformMatrix4fv(
-        data.programInfo.uniformLocations.projectionMatrix,
-        false,
-        projectionMatrix);
-    gl.uniformMatrix4fv(
-        data.programInfo.uniformLocations.modelViewMatrix,
-        false,
-        modelViewMatrix);
-
-}
-
-// window.onload = main;
-
-export function windowSizeChangeCallback() {
-    if (data.gl) {
-        data.gl.viewport(0, 0, data.gl.canvas.width, data.gl.canvas.height);
-        upadteView();
-    }
-}
-
-export function main(gl) {
-    // If we don't have a GL context, give up now
-    if (!gl) {
-        alert('Unable to initialize WebGL. Your browser or machine may not support it.');
-        return;
-    }
-
-    data.gl = gl;
-    // Initialize the shader program
-    const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
-
-    // Collect all the info needed to use the shader program.
-    data.programInfo = {
-        program: shaderProgram,
-        attribLocations: {
-            vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
-            vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor'),
-        },
-        uniformLocations: {
-            projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
-            modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
-        },
-    };
-
-    // Define the positions and colors for the vertices
-    const positionsColors = new Float32Array([
-        // x, y, z, r, g, b
-        0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
-        0.2, 0.0, 0.0, 0.0, 1.0, 0.0,
-        0.0, 0.2, 0.0, 0.0, 0.0, 1.0,
-        0.2, 0.2, 0.0, 1.0, 1.0, 0.0,
-        0.4, 0.0, 0.0, 0.0, 1.0, 1.0,
-        0.4, 0.2, 0.0, 1.0, 0.0, 1.0,
-        0.0, 0.4, 0.0, 1.0, 1.0, 1.0,
-        0.2, 0.4, 0.0, 0.5, 0.5, 0.5,
-        0.4, 0.4, 0.0, 0.0, 0.0, 0.0,
-    ]);
-
-    // Define the indices for the triangle strip
-    const indices = new Uint32Array([
-        // 0, 1, 2,
-        // 1, 2, 3,
-        // 1, 3, 4,
-        // 3, 4, 5,
-        // 2, 3, 6,
-        // 3, 6, 7,
-        // 3, 7, 5,
-        // 5, 7, 8,
-        0, 1, 3,
-        1, 2, 4,
-        4, 6, 7
-    ]);
-    updateVertex(positionsColors);
-    updateIndex(indices);
-
-    // Tell WebGL to use our program when drawing
-    data.gl.useProgram(data.programInfo.program);
-
-    // window resize call back
-    windowSizeChangeCallback();
-
-    upadteView();
-}
-
-export function draw() {
-    data.gl.clearColor(0.5, 0.5, 0.5, 1.0);  // Clear to black, fully opaque
-    data.gl.clearDepth(1.0);                 // Clear everything
-    data.gl.enable(data.gl.DEPTH_TEST);           // Enable depth testing
-    data.gl.depthFunc(data.gl.LEQUAL);            // Near things obscure far things
-
-    // Clear the canvas before we start drawing on it.
-    data.gl.clear(data.gl.COLOR_BUFFER_BIT | data.gl.DEPTH_BUFFER_BIT);
-
-    data.gl.drawElements(data.gl.TRIANGLES, data.vertexCount, data.gl.UNSIGNED_INT, data.offset);
-}
-
-export function setTransform(x, y, z, scale, rotate) {
-    data.trans.x = -x * 0.1 || 0;
-    data.trans.y = -y * 0.1 || 0;
-    data.trans.z = z || 0;
-    data.trans.distance = scale * 10;
-    data.trans.rotate = rotate / 50;
-
-    upadteView()
-}
-
-export function updateVertex(positionsColors) {
-    const gl = data.gl;
-    const programInfo = data.programInfo;
-
-    // Create a buffer for the positions and colors
-    const positionColorBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionColorBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, positionsColors, gl.DYNAMIC_DRAW);
-
-    // Tell WebGL how to pull out the positions from the positionColor buffer into the vertexPosition attribute.
-    {
-        const numComponents = 3;
-        const type = gl.FLOAT;
-        const normalize = false;
-        const stride = 24;  // 6 * 4 bytes per vertex
-        const offset = 0;
-        gl.vertexAttribPointer(
-            programInfo.attribLocations.vertexPosition,
-            numComponents,
-            type,
-            normalize,
-            stride,
-            offset);
-        gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
-    }
-
-    // Tell WebGL how to pull out the colors from the positionColor buffer into the vertexColor attribute.
-    {
-        const numComponents = 3;
-        const type = gl.FLOAT;
-        const normalize = false;
-        const stride = 24;  // 6 * 4 bytes per vertex
-        const offset = 12;  // 3 * 4 bytes to start of color data
-        gl.vertexAttribPointer(
-            programInfo.attribLocations.vertexColor,
-            numComponents,
-            type,
-            normalize,
-            stride,
-            offset);
-        gl.enableVertexAttribArray(programInfo.attribLocations.vertexColor);
-    }
-
-    data.offset = 0;
-}
-
-
-export function updateIndex(indices) {
-    const gl = data.gl;
-    // Create a buffer for the indices
-    const indexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.DYNAMIC_DRAW);
-
-    data.vertexCount = indices.length;
-}
-
-
-export function getTransform() {
-    return data.trans;
+    info_dom.innerText = player.player.dash(dx, dy);
 }

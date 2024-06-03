@@ -25,6 +25,131 @@ export class Cell {
 }
 /**
 */
+export class Player {
+  free(): void;
+/**
+* @returns {Player}
+*/
+  static new(): Player;
+/**
+* @param {World} world
+*/
+  tick(world: World): void;
+/**
+* @param {number} dx
+* @param {number} dy
+* @returns {string}
+*/
+  move_by(dx: number, dy: number): string;
+/**
+* @param {number} dir_x
+* @param {number} dir_y
+* @returns {string}
+*/
+  dash(dir_x: number, dir_y: number): string;
+/**
+* @returns {boolean}
+*/
+  is_dashing(): boolean;
+/**
+* @returns {number}
+*/
+  get_dash_deg(): number;
+/**
+* 敏捷
+* 增加闪避率，增加暴击率
+* 增加攻击速度
+* 增加移动速度，增加闪现距离（同时增加体力消耗）
+*/
+  agi: number;
+/**
+* 攻击力
+* 攻击时伤害加成
+*/
+  atk: number;
+/**
+* 防御力
+* 受伤时减轻伤害
+*/
+  def: number;
+/**
+* 灵巧
+* 增加命中率，增加暴击伤害
+* 增加闪现距离（同时增加体力消耗）
+*/
+  dex: number;
+/**
+* 经验值
+*/
+  exp: number;
+/**
+* 每一级升级所需经验
+* 一般设置为 lv * 10
+*/
+  exp_max: number;
+/**
+* 金钱
+*/
+  gold: number;
+/**
+* 血量
+*/
+  hp: number;
+/**
+* 最大血量
+*/
+  hp_max: number;
+/**
+* 智力
+* 增强魔法伤害，增强魔法减伤，增加魔力回复速率
+*/
+  int: number;
+/**
+* 幸运
+* 增加掉落率，增加暴击率，增加抽卡命中率
+*/
+  luk: number;
+/**
+* 等级
+*/
+  lv: number;
+/**
+* 蓝量
+*/
+  mp: number;
+/**
+* 最大蓝量
+*/
+  mp_max: number;
+/**
+* 耐力
+*/
+  sp: number;
+/**
+* 最大耐力
+*/
+  sp_max: number;
+/**
+* 力量
+* 增加移动速度，负重，体力和血量回复速度
+* 增加攻击速度
+*/
+  str: number;
+/**
+* x 位置
+*/
+  x: number;
+/**
+* y 位置
+*/
+  y: number;
+/**
+* z 位置
+*/
+  z: number;
+}
+/**
+*/
 export class World {
   free(): void;
 /**
@@ -116,8 +241,57 @@ export interface InitOutput {
   readonly world_to_update_map: (a: number) => number;
   readonly world_to_update_index: (a: number) => number;
   readonly world_get_h: (a: number, b: number, c: number) => number;
+  readonly __wbg_player_free: (a: number) => void;
+  readonly __wbg_get_player_x: (a: number) => number;
+  readonly __wbg_set_player_x: (a: number, b: number) => void;
+  readonly __wbg_get_player_y: (a: number) => number;
+  readonly __wbg_set_player_y: (a: number, b: number) => void;
+  readonly __wbg_get_player_z: (a: number) => number;
+  readonly __wbg_set_player_z: (a: number, b: number) => void;
+  readonly __wbg_get_player_lv: (a: number) => number;
+  readonly __wbg_set_player_lv: (a: number, b: number) => void;
+  readonly __wbg_get_player_exp: (a: number) => number;
+  readonly __wbg_set_player_exp: (a: number, b: number) => void;
+  readonly __wbg_get_player_exp_max: (a: number) => number;
+  readonly __wbg_set_player_exp_max: (a: number, b: number) => void;
+  readonly __wbg_get_player_gold: (a: number) => number;
+  readonly __wbg_set_player_gold: (a: number, b: number) => void;
+  readonly __wbg_get_player_hp: (a: number) => number;
+  readonly __wbg_set_player_hp: (a: number, b: number) => void;
+  readonly __wbg_get_player_hp_max: (a: number) => number;
+  readonly __wbg_set_player_hp_max: (a: number, b: number) => void;
+  readonly __wbg_get_player_mp: (a: number) => number;
+  readonly __wbg_set_player_mp: (a: number, b: number) => void;
+  readonly __wbg_get_player_mp_max: (a: number) => number;
+  readonly __wbg_set_player_mp_max: (a: number, b: number) => void;
+  readonly __wbg_get_player_sp: (a: number) => number;
+  readonly __wbg_set_player_sp: (a: number, b: number) => void;
+  readonly __wbg_get_player_sp_max: (a: number) => number;
+  readonly __wbg_set_player_sp_max: (a: number, b: number) => void;
+  readonly __wbg_get_player_atk: (a: number) => number;
+  readonly __wbg_set_player_atk: (a: number, b: number) => void;
+  readonly __wbg_get_player_def: (a: number) => number;
+  readonly __wbg_set_player_def: (a: number, b: number) => void;
+  readonly __wbg_get_player_int: (a: number) => number;
+  readonly __wbg_set_player_int: (a: number, b: number) => void;
+  readonly __wbg_get_player_str: (a: number) => number;
+  readonly __wbg_set_player_str: (a: number, b: number) => void;
+  readonly __wbg_get_player_agi: (a: number) => number;
+  readonly __wbg_set_player_agi: (a: number, b: number) => void;
+  readonly __wbg_get_player_dex: (a: number) => number;
+  readonly __wbg_set_player_dex: (a: number, b: number) => void;
+  readonly __wbg_get_player_luk: (a: number) => number;
+  readonly __wbg_set_player_luk: (a: number, b: number) => void;
+  readonly player_new: () => number;
+  readonly player_tick: (a: number, b: number) => void;
+  readonly player_move_by: (a: number, b: number, c: number, d: number) => void;
+  readonly player_dash: (a: number, b: number, c: number, d: number) => void;
+  readonly player_is_dashing: (a: number) => number;
+  readonly player_get_dash_deg: (a: number) => number;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
+  readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
+  readonly __wbindgen_free: (a: number, b: number, c: number) => void;
   readonly __wbindgen_exn_store: (a: number) => void;
 }
 

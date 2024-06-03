@@ -1,12 +1,17 @@
-import initSync, { World } from "./gamers_world_wasm.js"
+import { player } from "./canvas.js";
+import initSync, { World, Player } from "./gamers_world_wasm.js"
 
-const webgl = await import("./canvas.js");
+const webgl = await import("./webgl.js");
 const wasm = await initSync();
+const canvas = await import("./canvas.js");
 
 const myCanvas = document.getElementById('game');
 const gl = myCanvas.getContext('webgl2');
-const myCanvas2D = document.getElementById('game2d');
-const ctx = myCanvas2D.getContext('2d');
+// const myCanvas2D = document.getElementById('game2d');
+// const ctx = myCanvas2D.getContext('2d');
+
+const key_hold_threadhold = 100000;
+
 
 const fps_value = document.getElementById("fps-value");
 const info_dom = document.getElementById("info");
@@ -15,54 +20,35 @@ let lastTime = Date.now();
 function renderLoop() {
     setTransform();
 
-    webgl.draw();
     // update the fps
     fps_value.innerHTML = Math.round(1000 / (Date.now() - lastTime));
     lastTime = Date.now();
 
-    // // Set up for 2D drawing
-    ctx.save();
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
-    // Draw a simple rectangle
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-    ctx.fillRect(50, 50, 200, 200);
-
-    // Draw a image
-    if (game.res.ready) {
-        const scale = ctx.canvas.height * 0.001 / (trans.scale + 0.05);
-        const imgw = 25 * scale;
-        const imgh = 50 * scale;
-        // info_dom.innerText = `scale: ${scale}, dir: ${imgw}`
-        ctx.translate(myCanvas2D.width / 2, myCanvas2D.height / 2);
-        if (player.dir == 1) {
-            ctx.scale(-1, 1);
-        }
-        let ig = game.res.man[player.step_list[Math.floor(player.step)]];
-        ig && ctx.drawImage(ig, - imgw / 2, - imgh, imgw, imgh);
-        ctx.resetTransform();
-    }
-
-    // Restore the context to its original state
-    ctx.restore();
-
-    requestAnimationFrame(renderLoop);
-
     game.world.tick();
+    canvas.tick();
     if (game.world.to_update_map()) {
         webgl.updateVertex(game.cells);
     }
     if (game.world.to_update_index()) {
         webgl.updateIndex(game.indices);
     }
+
+    if(player.player.is_dashing()){
+        webgl.to_update_view();
+    }
+
+    canvas.render(game.res, trans);
+
+    webgl.draw();
+    requestAnimationFrame(renderLoop);
 }
 
 function onResize() {
     myCanvas.width = window.innerWidth * window.devicePixelRatio;
     myCanvas.height = window.innerHeight * window.devicePixelRatio;
-    myCanvas2D.width = window.innerWidth;
-    myCanvas2D.height = window.innerHeight;
     webgl.windowSizeChangeCallback();
+    canvas.onResize();
+    webgl.to_update_view();
 }
 
 function setTransform() {
@@ -76,30 +62,17 @@ function setTransform() {
     } else {
         trans.dt--;
     }
-    let dx = trans.keya - trans.keyd;
-    let dy = trans.keys - trans.keyw;
+    let dx = trans.keyd - trans.keya;
+    let dy = trans.keyw - trans.keys;
     let dr = trans.keyq - trans.keye;
-    trans.to_update |= dx != 0 || dy != 0 || dr != 0;
-    if (trans.to_update) {
-        trans.x += dx;
-        trans.y += dy;
+    if (dr != 0) {
         trans.rotate += dr;
-        trans.to_update = false;
-
-        let ts = webgl.getTransform();
-        trans.z = game.world.get_h(ts.x, ts.y);
-        // console.log(ts.x, ts.y, trans.z);
-        // .innerText = `x: ${ts.x}, y: ${ts.y}, z: ${trans.z}`;
-        webgl.setTransform(trans.x, trans.y, trans.z, trans.scale, trans.rotate);
+        webgl.setTransform(trans.scale, trans.rotate);
+        webgl.to_update_view();
     }
-    if (dx != 0) {
-        player.dir = dx > 0 ? 1 : -1;
-    }
-    if (dx != 0 || dy != 0) {
-        player.step += 0.13;
-        if (player.step >= 4) {
-            player.step = 0;
-        }
+    canvas.setTransform(dx, dy, dr);
+    if (dx != 0 || dy != 0 || dr != 0) {
+        webgl.to_update_view();
     }
 }
 
@@ -110,13 +83,22 @@ window.addEventListener("resize", onResize);
 window.addEventListener("wheel", (e) => {
     // scale the canvas
     trans.scale *= 1 - e.deltaY / 1000;
-    trans.to_update = true;
+    webgl.setTransform(trans.scale, trans.rotate);
+    webgl.to_update_view();
 });
 
 window.addEventListener("keydown", (e) => {
     console.log(e.key);
     // move the canvas by wsad
     switch (e.key) {
+        case "Shift":
+            e.preventDefault(); // 阻止默认的右键菜单显示
+            // towards current direction
+            let dx = trans.keyd - trans.keya;
+            let dy = trans.keyw - trans.keys;
+            canvas.dash(dx, dy);
+            webgl.to_update_view();
+            break;
         case "w":
             trans.keyw = 2;
             break;
@@ -137,8 +119,9 @@ window.addEventListener("keydown", (e) => {
         default:
             return;
     }
-    trans.dt = 60;
+    trans.dt = 60 * key_hold_threadhold / 1000;
 });
+
 
 window.addEventListener("keyup", (e) => {
     // move the canvas by wsad
@@ -166,6 +149,14 @@ window.addEventListener("keyup", (e) => {
     }
 });
 
+document.addEventListener('contextmenu', function (e) {
+    e.preventDefault(); // 阻止默认的右键菜单显示
+    // towards the mouse
+    let dx = e.clientX - window.innerWidth / 2;
+    let dy = e.clientY - window.innerHeight / 2;
+    canvas.dash(dx, -dy);
+    webgl.to_update_view();
+});
 
 const game = {
     width: 100,
@@ -176,9 +167,9 @@ const game = {
 
     res: {
         ready: false,
-        img: null,
     },
 };
+
 const trans = {
     keyw: 0,
     keys: 0,
@@ -189,16 +180,11 @@ const trans = {
     x: 0,
     y: 0,
     z: 0,
-    scale: 1,
+    scale: .3,
     rotate: 0,
     to_update: false,
 };
 
-const player = {
-    dir: 1,
-    step_list: ['s1', 's2', 's3', 's4'],
-    step: 3.9,
-}
 
 function loadResources() {
     // const res = await fetch('./resources.json');
@@ -222,12 +208,14 @@ function loadResources() {
 
 async function init() {
 
+    const player = Player.new();
+
     onResize();
-    webgl.main(gl);
+    webgl.main(gl, player);
     loadResources();
 
-    const world = World.new(200, 200);
-    // const world = World.new(4, 4);
+    // const world = World.new(200, 200);
+    const world = World.new(20, 20);
     game.world = world;
 
     const cellsPtr = world.get_vec();
@@ -242,11 +230,17 @@ async function init() {
     game.height = world.h;
     game.width = world.w;
 
+    canvas.player.player = player;
+    canvas.player.world = world;
+
     renderLoop();
 
     // let seed = BigInt(Math.round(Math.random() * 10000));
     let seed = BigInt(124);
     world.start(seed);
+    player.move_by(0, 0, world);
+    webgl.setTransform(trans.scale, trans.rotate);
+    webgl.to_update_view();
 }
 
 await init();

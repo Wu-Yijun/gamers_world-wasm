@@ -214,8 +214,8 @@ async function init() {
     webgl.main(gl, player);
     loadResources();
 
-    // const world = World.new(200, 200);
-    const world = World.new(20, 20);
+    const world = World.new(200, 200);
+    // const world = World.new(20, 20);
     game.world = world;
 
     const cellsPtr = world.get_vec();
@@ -235,8 +235,8 @@ async function init() {
 
     renderLoop();
 
-    // let seed = BigInt(Math.round(Math.random() * 10000));
-    let seed = BigInt(124);
+    let seed = BigInt(Math.round(Math.random() * 10000));
+    // let seed = BigInt(124);
     world.start(seed);
     player.move_by(0, 0, world);
     webgl.setTransform(trans.scale, trans.rotate);

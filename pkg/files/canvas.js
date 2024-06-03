@@ -2,6 +2,8 @@ import { Player, World } from "./gamers_world_wasm.js";
 
 const myCanvas2D = document.getElementById('game2d');
 const ctx = myCanvas2D.getContext('2d');
+const myCanvasShadow = document.getElementById('game2d_shadow');
+const ctxS = myCanvasShadow.getContext('2d');
 
 const info_dom = document.getElementById("info");
 
@@ -9,6 +11,8 @@ const info_dom = document.getElementById("info");
 export const player = {
     player: new Player(),
     world: new World(),
+    res: null,
+    webgl: null,
     dir: 1,
     step_list: ['s1', 's2', 's3', 's4'],
     step: 3.9,
@@ -27,13 +31,91 @@ export const player = {
 };
 
 
-export function render(res, trans) {
-    const ui = player.ui;
+export function render(trans_scale) {
+    const scale = player.ui * 0.1 / (trans_scale + 0.05);
 
-    // // Set up for 2D drawing
-    // ctx.save();
     ctx.resetTransform();
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.translate(ctx.canvas.width / 2, ctx.canvas.height / 2);
+    ctxS.resetTransform();
+    ctxS.clearRect(0, 0, ctxS.canvas.width, ctxS.canvas.height);
+    ctxS.translate(ctx.canvas.width / 2, ctx.canvas.height / 2);
+
+
+    // Draw the entities
+    drawEntity(scale);
+
+    drawPlayer(scale);
+
+    drawUI();
+
+}
+
+function drawEntity(scale) {
+    const mat1 = player.webgl.getModelViewMatrix();
+    const mat2 = player.webgl.getProjectionMatrix();
+    const px = player.player.x;
+    const py = player.player.y;
+    const pz = player.player.z;
+    const hei = ctx.canvas.height / 2;
+    const wei = ctx.canvas.width / 2;
+    const gh = 20 * scale;
+    const gw = 10 * scale;
+    // console.clear()
+    // const hei = 1;
+    if (mat1 && mat2) {
+        // 只需要 位置 和id 即可
+        let num = player.world.get_entity_len();
+        for (let i = 0; i < num; i++) {
+            const entity = player.world.get_entity(i);
+            let pos = glMatrix.vec4.fromValues(entity[0], entity[1], entity[2], 1.0);
+            glMatrix.vec4.transformMat4(pos, pos, mat1);
+            glMatrix.vec4.transformMat4(pos, pos, mat2);
+
+            if (entity[3] == 1) { // Gold
+                let img = player.res.gold;
+                let x = pos[0] / pos[3] * wei;
+                let y = -pos[1] / pos[3] * hei;
+                img && ctx.drawImage(img, x - gw / 2, y - gh, gw, gh);
+                ctxS.beginPath();
+                ctxS.ellipse(x, y, 6 * scale, 3 * scale, 0, 0, 2 * Math.PI);
+                ctxS.fill();
+            } else if (entity[3] == 2) { //Knife
+            }
+        }
+    }
+}
+
+function drawPlayer(scale) {
+    // Draw shadow (an ellipse)
+    ctxS.beginPath();
+    ctxS.ellipse(0, 0, 18 * scale, 7 * scale, 0, 0, 2 * Math.PI);
+    ctxS.fill();
+
+    // Draw the man
+    if (player.res.man) {
+        if (player.player.is_dashing()) {
+            const imgw = 70 * scale;
+            const imgh = 30 * scale;
+            let ig = player.res.manDash;
+            let deg = player.player.get_dash_deg();
+            ctx.rotate(deg);
+            ig && ctx.drawImage(ig, 0, -imgh / 2, imgw, imgh);
+        } else {
+            const imgw = 25 * scale;
+            const imgh = 50 * scale;
+            if (player.dir == 1) {
+                ctx.scale(-1, 1);
+            }
+            let ig = player.res.man[player.step_list[Math.floor(player.step)]];
+            ig && ctx.drawImage(ig, - imgw / 2, - imgh, imgw, imgh);
+        }
+    }
+}
+
+function drawUI() {
+    const ui = player.ui;
+    ctx.resetTransform();
 
     // Draw hp
     ctx.translate(0, 5 * ui);
@@ -85,38 +167,18 @@ export function render(res, trans) {
     ctx.fillText(`Lv: ${level} (Exp: ${Math.floor(exp)})`, - 10 * ui, -12 * ui);
     ctx.fillRect(-80 * ui, -10 * ui, ui * 160 * exp / exp_max, ui);
 
-    // Draw the man
-    ctx.resetTransform();
-    if (res.man) {
-        const scale = ui * 0.1 / (trans.scale + 0.05);
-        ctx.translate(myCanvas2D.width / 2, myCanvas2D.height / 2);
-        if (player.player.is_dashing()) {
-            const imgw = 70 * scale;
-            const imgh = 30 * scale;
-            let ig = res.manDash;
-            let deg = player.player.get_dash_deg();
-            ctx.rotate(deg);
-            ig && ctx.drawImage(ig, 0, -imgh / 2, imgw, imgh);
-        } else {
-            const imgw = 25 * scale;
-            const imgh = 50 * scale;
-            if (player.dir == 1) {
-                ctx.scale(-1, 1);
-            }
-            let ig = res.man[player.step_list[Math.floor(player.step)]];
-            ig && ctx.drawImage(ig, - imgw / 2, - imgh, imgw, imgh);
-        }
-    }
-
-    // Restore the context to its original state
-    // ctx.restore();
-
 }
 
 export function onResize() {
     myCanvas2D.width = window.innerWidth;
     myCanvas2D.height = window.innerHeight;
+    myCanvasShadow.width = window.innerWidth;
+    myCanvasShadow.height = window.innerHeight;
     player.ui = window.innerHeight / 150;
+
+    ctxS.fillStyle = "#00000033"
+    ctxS.resetTransform();
+    ctxS.translate(ctxS.canvas.width / 2, ctxS.canvas.height / 2);
 }
 
 export function setTransform(dx, dy, dr) {

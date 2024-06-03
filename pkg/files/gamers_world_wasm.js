@@ -526,6 +526,88 @@ export class Entity {
     }
 }
 
+const Entity_RepresentFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_entity_represent_free(ptr >>> 0));
+/**
+* Represents a single entity in the game.
+* (x, y, z, type)
+*/
+export class Entity_Represent {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(Entity_Represent.prototype);
+        obj.__wbg_ptr = ptr;
+        Entity_RepresentFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        Entity_RepresentFinalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_entity_represent_free(ptr);
+    }
+    /**
+    * @returns {number}
+    */
+    get 0() {
+        const ret = wasm.__wbg_get_cell_x(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * @param {number} arg0
+    */
+    set 0(arg0) {
+        wasm.__wbg_set_cell_x(this.__wbg_ptr, arg0);
+    }
+    /**
+    * @returns {number}
+    */
+    get 1() {
+        const ret = wasm.__wbg_get_cell_y(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * @param {number} arg0
+    */
+    set 1(arg0) {
+        wasm.__wbg_set_cell_y(this.__wbg_ptr, arg0);
+    }
+    /**
+    * @returns {number}
+    */
+    get 2() {
+        const ret = wasm.__wbg_get_cell_z(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * @param {number} arg0
+    */
+    set 2(arg0) {
+        wasm.__wbg_set_cell_z(this.__wbg_ptr, arg0);
+    }
+    /**
+    * @returns {number}
+    */
+    get 3() {
+        const ret = wasm.__wbg_get_entity_represent_3(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * @param {number} arg0
+    */
+    set 3(arg0) {
+        wasm.__wbg_set_entity_represent_3(this.__wbg_ptr, arg0);
+    }
+}
+
 const KnifeFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_knife_free(ptr >>> 0));
@@ -1240,6 +1322,21 @@ export class World {
     */
     add_entity(x, y, z) {
         wasm.world_add_entity(this.__wbg_ptr, x, y, z);
+    }
+    /**
+    * @returns {number}
+    */
+    get_entity_len() {
+        const ret = wasm.world_get_entity_len(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+    * @param {number} index
+    * @returns {Entity_Represent}
+    */
+    get_entity(index) {
+        const ret = wasm.world_get_entity(this.__wbg_ptr, index);
+        return Entity_Represent.__wrap(ret);
     }
 }
 

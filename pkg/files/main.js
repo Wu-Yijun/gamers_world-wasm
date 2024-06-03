@@ -39,7 +39,7 @@ function renderLoop() {
     }
 
 
-    canvas.render(game.res, trans);
+    canvas.render(trans.scale);
 
     webgl.draw();
     requestAnimationFrame(renderLoop);
@@ -90,7 +90,7 @@ window.addEventListener("wheel", (e) => {
 });
 
 window.addEventListener("keydown", (e) => {
-    console.log(e.key);
+    // console.log(e.key);
     // move the canvas by wsad
     switch (e.key) {
         case "Shift":
@@ -179,9 +179,7 @@ const game = {
     colors: null,
     world: null,
 
-    res: {
-        ready: false,
-    },
+    res: {},
 };
 
 const trans = {
@@ -213,7 +211,7 @@ function loadResources() {
         }
         game.res[e.data.key] = e.data.val;
         if (e.data.is_ready) {
-            game.res.ready = true;
+            console.log("All resources are loaded!");
             worker.terminate();
             return;
         }
@@ -221,6 +219,7 @@ function loadResources() {
 }
 
 async function init() {
+    console.clear();
 
     const player = Player.new();
 
@@ -246,12 +245,15 @@ async function init() {
 
     canvas.player.player = player;
     canvas.player.world = world;
+    canvas.player.webgl = webgl;
+    canvas.player.res = game.res;
 
     renderLoop();
 
     let seed = BigInt(Math.round(Math.random() * 10000));
     // let seed = BigInt(124);
     world.start(seed);
+    console.log("随机数种子: ", seed);
     player.move_by(0, 0, world);
     webgl.setTransform(trans.scale, trans.rotate);
     webgl.to_update_view();

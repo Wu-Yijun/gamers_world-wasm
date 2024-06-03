@@ -6,7 +6,7 @@ async function load_img(key, url) {
         }
         const blob = await response.blob();
         const bitmap = await createImageBitmap(blob);
-        postMessage({ val: bitmap, key: key, is_ready: true });
+        postMessage({ val: bitmap, key: key});
     } catch (error) {
         self.postMessage({ error: error.message });
     }
@@ -41,12 +41,15 @@ async function load_all() {
     );
     await load_img('manDash', "../res/man/dash.png");
     await load_img('gold', "../res/Gold.png");
-    await load_imgs('knife', {
-        k1: "../res/knife.png",
-    });
+    await load_imgs('knife',
+        {
+            k1: "../res/knife.png",
+        }
+    );
 }
 
-load_all().then(() => {
-    postMessage({ is_ready: true })
+load_all().then((e) => {
+    postMessage({ is_ready: true });
+    self.close();
 })
 

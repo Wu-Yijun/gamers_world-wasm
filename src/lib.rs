@@ -2,6 +2,7 @@ mod map_gen;
 mod player;
 mod utils;
 
+use rand::Rng;
 use wasm_bindgen::prelude::*;
 
 mod entity;
@@ -112,6 +113,13 @@ impl World {
 
         self.map_changed = true;
         self.index_changed = true;
+
+        // let w = (self.w / 3) as f32;
+        // let h = (self.h / 3) as f32;
+        // self.add_entity(w, h, self.get_h(w, h));
+        // self.add_entity(-w, h, self.get_h(-w, h));
+        // self.add_entity(w, -h, self.get_h(w, -h));
+        // self.add_entity(-w, -h, self.get_h(-w, -h));
     }
 
     pub fn get_vec(&self) -> *const f32 {
@@ -133,13 +141,16 @@ impl World {
     }
 
     pub fn tick(&mut self) {
-        // use rand::prelude::*;
-        // let mut rng = rand::thread_rng();
-        // for i in 1..10000 {
-        //     let index = rng.gen_range(0..self.cells.len());
-        //     self.cells[index].z = rng.gen_range(0.0..0.8);
-        // }
-        // self.map_changed = true;
+        // randomly generate an entity
+        let mut rng = rand::thread_rng();
+        if rng.gen_range(0..100) < 5 {
+            let x = (self.w - 1) as f32 / 2.2;
+            let y = (self.h - 1) as f32 / 2.2;
+            let x = rng.gen_range(-x..x);
+            let y = rng.gen_range(-y..y);
+            let z = self.get_h(x, y);
+            self.add_entity(x, y, z);
+        }
     }
 
     pub fn to_update_map(&mut self) -> bool {
@@ -207,4 +218,17 @@ impl World {
     pub fn add_entity(&mut self, x: f32, y: f32, z: f32) {
         self.entities.push(Entity::new(x, y, z));
     }
+
+    pub fn get_entity_len(&self) -> usize {
+        self.entities.len()
+    }
+    pub fn get_entity(&self, index: usize) -> Entity_Represent {
+        let e = &self.entities[index];
+        Entity_Represent(e.x, e.y, e.z, e.e as usize as isize)
+    }
 }
+
+/// Represents a single entity in the game.
+/// (x, y, z, type)
+#[wasm_bindgen]
+pub struct Entity_Represent(pub f32, pub f32, pub f32, pub isize);

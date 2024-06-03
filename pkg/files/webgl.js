@@ -47,7 +47,9 @@ const data = {
         fov: 75.0,
         distance: 10,
         rotate: 0,
-    }
+    },
+    projectionMatrix: null,
+    modelViewMatrix: null,
 }
 
 
@@ -132,6 +134,8 @@ function updateView() {
         false,
         modelViewMatrix);
 
+    data.projectionMatrix = projectionMatrix;
+    data.modelViewMatrix = modelViewMatrix;
 }
 
 // window.onload = main;
@@ -286,7 +290,9 @@ export function updateIndex(indices) {
     data.vertexCount = indices.length;
 }
 
-
-export function getTransform() {
-    return data.trans;
+export function getModelViewMatrix(){
+    return data.modelViewMatrix;
+}
+export function getProjectionMatrix(){
+    return data.projectionMatrix;
 }

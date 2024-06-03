@@ -33,7 +33,7 @@ function renderLoop() {
         webgl.updateIndex(game.indices);
     }
 
-    if(player.player.is_dashing()){
+    if (player.player.is_dashing()) {
         webgl.to_update_view();
     }
 
@@ -100,21 +100,27 @@ window.addEventListener("keydown", (e) => {
             webgl.to_update_view();
             break;
         case "w":
+        case "W":
             trans.keyw = 2;
             break;
         case "s":
+        case "S":
             trans.keys = 2;
             break;
         case "a":
+        case "A":
             trans.keya = 2;
             break;
         case "d":
+        case "D":
             trans.keyd = 2;
             break;
         case "q":
+        case "Q":
             trans.keyq = 1;
             break;
         case "e":
+        case "E":
             trans.keye = 1;
         default:
             return;
@@ -127,21 +133,27 @@ window.addEventListener("keyup", (e) => {
     // move the canvas by wsad
     switch (e.key) {
         case "w":
+        case "W":
             trans.keyw = 0;
             break;
         case "s":
+        case "S":
             trans.keys = 0;
             break;
         case "a":
+        case "A":
             trans.keya = 0;
             break;
         case "d":
+        case "D":
             trans.keyd = 0;
             break;
         case "q":
+        case "Q":
             trans.keyq = 0;
             break;
         case "e":
+        case "E":
             trans.keye = 0;
             break;
         default:

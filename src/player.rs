@@ -134,9 +134,13 @@ impl Player {
     }
 
     pub fn dash(&mut self, dir_x: f32, dir_y: f32) -> String {
+        let dsp = 2.0 * (1.0 + self.agi * 0.15 + self.dex * 0.1) * (self.str * 0.1 + 1.0);
+        if self.sp < dsp {
+            return format!("[Dash] [SP] not enough, need at least {:?}", dsp);
+        }
+
         let r = (0.05 * (self.agi * 0.2 + self.dex * 0.1) * self.str) as f32
             / (dir_x * dir_x + dir_y * dir_y).sqrt();
-        let dsp = 2.0 * (1.0 + self.agi * 0.15 + self.dex * 0.1) * (self.str * 0.1 + 1.0);
         // self.x += dir_x * r;
         // self.y += dir_y * r;
         self.dashing.1 = dir_x * r;

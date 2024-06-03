@@ -39,10 +39,14 @@ async function load_all() {
             s4: "../res/man/step (4).png",
         }
     );
-    await load_img('manDash',"../res/man/dash.png")
+    await load_img('manDash', "../res/man/dash.png");
+    await load_img('gold', "../res/Gold.png");
+    await load_imgs('knife', {
+        k1: "../res/knife.png",
+    });
 }
 
-load_all().then(()=>{
-    postMessage({is_ready: true})
+load_all().then(() => {
+    postMessage({ is_ready: true })
 })
 

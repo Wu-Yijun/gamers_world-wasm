@@ -1,8 +1,13 @@
 mod map_gen;
-mod utils;
 mod player;
+mod utils;
 
 use wasm_bindgen::prelude::*;
+
+mod entity;
+use entity::Entity;
+mod enemy;
+use enemy::Enemy;
 
 #[wasm_bindgen]
 extern "C" {
@@ -34,6 +39,9 @@ pub struct World {
     indices: Vec<usize>,
     map_changed: bool,
     index_changed: bool,
+
+    entities: Vec<Entity>,
+    enemies: Vec<Enemy>,
 }
 
 #[wasm_bindgen]
@@ -93,6 +101,8 @@ impl World {
             indices,
             map_changed: false,
             index_changed: false,
+            entities: Vec::new(),
+            enemies: Vec::new(),
         }
     }
     pub fn start(&mut self, seed: u64) {
@@ -187,10 +197,14 @@ impl World {
                     + self.cells[((j + 1) * (w + 1) + i + 1) as usize].z * dx
             } else {
                 // triangle 0 1 w+1
-                self.cells[(j * (w + 1) + i) as usize].z * (1.0-dx)
+                self.cells[(j * (w + 1) + i) as usize].z * (1.0 - dx)
                     + self.cells[(j * (w + 1) + i + 1) as usize].z * (dx - dy)
                     + self.cells[((j + 1) * (w + 1) + i + 1) as usize].z * dy
             }
         }
+    }
+
+    pub fn add_entity(&mut self, x: f32, y: f32, z: f32) {
+        self.entities.push(Entity::new(x, y, z));
     }
 }

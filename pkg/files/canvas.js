@@ -1,4 +1,4 @@
-import { Player } from "./gamers_world_wasm.js";
+import { Player, World } from "./gamers_world_wasm.js";
 
 const myCanvas2D = document.getElementById('game2d');
 const ctx = myCanvas2D.getContext('2d');
@@ -8,6 +8,7 @@ const info_dom = document.getElementById("info");
 
 export const player = {
     player: new Player(),
+    world: new World(),
     dir: 1,
     step_list: ['s1', 's2', 's3', 's4'],
     step: 3.9,

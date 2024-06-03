@@ -4,9 +4,18 @@ const heap = new Array(128).fill(undefined);
 
 heap.push(undefined, null, true, false);
 
-function getObject(idx) { return heap[idx]; }
-
 let heap_next = heap.length;
+
+function addHeapObject(obj) {
+    if (heap_next === heap.length) heap.push(heap.length + 1);
+    const idx = heap_next;
+    heap_next = heap[idx];
+
+    heap[idx] = obj;
+    return idx;
+}
+
+function getObject(idx) { return heap[idx]; }
 
 function dropObject(idx) {
     if (idx < 132) return;
@@ -18,15 +27,6 @@ function takeObject(idx) {
     const ret = getObject(idx);
     dropObject(idx);
     return ret;
-}
-
-function addHeapObject(obj) {
-    if (heap_next === heap.length) heap.push(heap.length + 1);
-    const idx = heap_next;
-    heap_next = heap[idx];
-
-    heap[idx] = obj;
-    return idx;
 }
 
 const cachedTextDecoder = (typeof TextDecoder !== 'undefined' ? new TextDecoder('utf-8', { ignoreBOM: true, fatal: true }) : { decode: () => { throw Error('TextDecoder not available') } } );
@@ -191,6 +191,9 @@ function handleError(f, args) {
         wasm.__wbindgen_exn_store(addHeapObject(e));
     }
 }
+/**
+*/
+export const Ent = Object.freeze({ NULL:0,"0":"NULL",Gold:1,"1":"Gold",Knife:2,"2":"Knife", });
 
 const CellFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
@@ -287,6 +290,394 @@ export class Cell {
     */
     set b(arg0) {
         wasm.__wbg_set_cell_b(this.__wbg_ptr, arg0);
+    }
+}
+
+const EnchantFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_enchant_free(ptr >>> 0));
+/**
+*/
+export class Enchant {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(Enchant.prototype);
+        obj.__wbg_ptr = ptr;
+        EnchantFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        EnchantFinalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_enchant_free(ptr);
+    }
+    /**
+    * 附魔效率
+    * @returns {number}
+    */
+    get eff() {
+        const ret = wasm.__wbg_get_enchant_eff(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * 附魔效率
+    * @param {number} arg0
+    */
+    set eff(arg0) {
+        wasm.__wbg_set_enchant_eff(this.__wbg_ptr, arg0);
+    }
+}
+
+const EnemyFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_enemy_free(ptr >>> 0));
+/**
+*/
+export class Enemy {
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        EnemyFinalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_enemy_free(ptr);
+    }
+    /**
+    * @returns {number}
+    */
+    get x() {
+        const ret = wasm.__wbg_get_enemy_x(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * @param {number} arg0
+    */
+    set x(arg0) {
+        wasm.__wbg_set_enemy_x(this.__wbg_ptr, arg0);
+    }
+    /**
+    * @returns {number}
+    */
+    get y() {
+        const ret = wasm.__wbg_get_enemy_y(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * @param {number} arg0
+    */
+    set y(arg0) {
+        wasm.__wbg_set_enemy_y(this.__wbg_ptr, arg0);
+    }
+    /**
+    * @returns {number}
+    */
+    get z() {
+        const ret = wasm.__wbg_get_enemy_z(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * @param {number} arg0
+    */
+    set z(arg0) {
+        wasm.__wbg_set_enemy_z(this.__wbg_ptr, arg0);
+    }
+}
+
+const EntityFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_entity_free(ptr >>> 0));
+/**
+*/
+export class Entity {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(Entity.prototype);
+        obj.__wbg_ptr = ptr;
+        EntityFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        EntityFinalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_entity_free(ptr);
+    }
+    /**
+    * @returns {number}
+    */
+    get x() {
+        const ret = wasm.__wbg_get_entity_x(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * @param {number} arg0
+    */
+    set x(arg0) {
+        wasm.__wbg_set_entity_x(this.__wbg_ptr, arg0);
+    }
+    /**
+    * @returns {number}
+    */
+    get y() {
+        const ret = wasm.__wbg_get_entity_y(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * @param {number} arg0
+    */
+    set y(arg0) {
+        wasm.__wbg_set_entity_y(this.__wbg_ptr, arg0);
+    }
+    /**
+    * @returns {number}
+    */
+    get z() {
+        const ret = wasm.__wbg_get_entity_z(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * @param {number} arg0
+    */
+    set z(arg0) {
+        wasm.__wbg_set_entity_z(this.__wbg_ptr, arg0);
+    }
+    /**
+    * @returns {Ent}
+    */
+    get e() {
+        const ret = wasm.__wbg_get_entity_e(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * @param {Ent} arg0
+    */
+    set e(arg0) {
+        wasm.__wbg_set_entity_e(this.__wbg_ptr, arg0);
+    }
+    /**
+    * @returns {number}
+    */
+    get gold() {
+        const ret = wasm.__wbg_get_entity_gold(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+    * @param {number} arg0
+    */
+    set gold(arg0) {
+        wasm.__wbg_set_entity_gold(this.__wbg_ptr, arg0);
+    }
+    /**
+    * @returns {number}
+    */
+    get exp() {
+        const ret = wasm.__wbg_get_enchant_eff(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * @param {number} arg0
+    */
+    set exp(arg0) {
+        wasm.__wbg_set_enchant_eff(this.__wbg_ptr, arg0);
+    }
+    /**
+    * @returns {Knife}
+    */
+    get knife() {
+        const ret = wasm.__wbg_get_entity_knife(this.__wbg_ptr);
+        return Knife.__wrap(ret);
+    }
+    /**
+    * @param {Knife} arg0
+    */
+    set knife(arg0) {
+        _assertClass(arg0, Knife);
+        var ptr0 = arg0.__destroy_into_raw();
+        wasm.__wbg_set_entity_knife(this.__wbg_ptr, ptr0);
+    }
+    /**
+    * @param {number} x
+    * @param {number} y
+    * @param {number} z
+    * @returns {Entity}
+    */
+    static new(x, y, z) {
+        const ret = wasm.entity_new(x, y, z);
+        return Entity.__wrap(ret);
+    }
+}
+
+const KnifeFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_knife_free(ptr >>> 0));
+/**
+* 近战武器
+*/
+export class Knife {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(Knife.prototype);
+        obj.__wbg_ptr = ptr;
+        KnifeFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        KnifeFinalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_knife_free(ptr);
+    }
+    /**
+    * 伤害, 决定攻击的基础伤害
+    * @returns {number}
+    */
+    get damage() {
+        const ret = wasm.__wbg_get_enchant_eff(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * 伤害, 决定攻击的基础伤害
+    * @param {number} arg0
+    */
+    set damage(arg0) {
+        wasm.__wbg_set_enchant_eff(this.__wbg_ptr, arg0);
+    }
+    /**
+    * 重量, 决定攻击的基础速度
+    * 还会影响体力的消耗
+    * @returns {number}
+    */
+    get weight() {
+        const ret = wasm.__wbg_get_knife_weight(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * 重量, 决定攻击的基础速度
+    * 还会影响体力的消耗
+    * @param {number} arg0
+    */
+    set weight(arg0) {
+        wasm.__wbg_set_knife_weight(this.__wbg_ptr, arg0);
+    }
+    /**
+    * 攻速, 决定攻击的频率
+    * 会受灵巧的影响
+    * @returns {number}
+    */
+    get speed() {
+        const ret = wasm.__wbg_get_knife_speed(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * 攻速, 决定攻击的频率
+    * 会受灵巧的影响
+    * @param {number} arg0
+    */
+    set speed(arg0) {
+        wasm.__wbg_set_knife_speed(this.__wbg_ptr, arg0);
+    }
+    /**
+    * 攻击距离
+    * @returns {number}
+    */
+    get radius() {
+        const ret = wasm.__wbg_get_knife_radius(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * 攻击距离
+    * @param {number} arg0
+    */
+    set radius(arg0) {
+        wasm.__wbg_set_knife_radius(this.__wbg_ptr, arg0);
+    }
+    /**
+    * 攻击角度范围
+    * @returns {number}
+    */
+    get angle() {
+        const ret = wasm.__wbg_get_knife_angle(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * 攻击角度范围
+    * @param {number} arg0
+    */
+    set angle(arg0) {
+        wasm.__wbg_set_knife_angle(this.__wbg_ptr, arg0);
+    }
+    /**
+    * 近战防御的基础格挡
+    * @returns {number}
+    */
+    get parry() {
+        const ret = wasm.__wbg_get_knife_parry(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * 近战防御的基础格挡
+    * @param {number} arg0
+    */
+    set parry(arg0) {
+        wasm.__wbg_set_knife_parry(this.__wbg_ptr, arg0);
+    }
+    /**
+    * 弹射物(远程)防御的基础格挡
+    * @returns {number}
+    */
+    get block() {
+        const ret = wasm.__wbg_get_knife_block(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * 弹射物(远程)防御的基础格挡
+    * @param {number} arg0
+    */
+    set block(arg0) {
+        wasm.__wbg_set_knife_block(this.__wbg_ptr, arg0);
+    }
+    /**
+    * 附魔
+    * @returns {Enchant}
+    */
+    get enchant() {
+        const ret = wasm.__wbg_get_knife_enchant(this.__wbg_ptr);
+        return Enchant.__wrap(ret);
+    }
+    /**
+    * 附魔
+    * @param {Enchant} arg0
+    */
+    set enchant(arg0) {
+        _assertClass(arg0, Enchant);
+        var ptr0 = arg0.__destroy_into_raw();
+        wasm.__wbg_set_knife_enchant(this.__wbg_ptr, ptr0);
     }
 }
 
@@ -842,6 +1233,14 @@ export class World {
         const ret = wasm.world_get_h(this.__wbg_ptr, x, y);
         return ret;
     }
+    /**
+    * @param {number} x
+    * @param {number} y
+    * @param {number} z
+    */
+    add_entity(x, y, z) {
+        wasm.world_add_entity(this.__wbg_ptr, x, y, z);
+    }
 }
 
 async function __wbg_load(module, imports) {
@@ -878,12 +1277,12 @@ async function __wbg_load(module, imports) {
 function __wbg_get_imports() {
     const imports = {};
     imports.wbg = {};
-    imports.wbg.__wbindgen_object_drop_ref = function(arg0) {
-        takeObject(arg0);
-    };
     imports.wbg.__wbindgen_number_new = function(arg0) {
         const ret = arg0;
         return addHeapObject(ret);
+    };
+    imports.wbg.__wbindgen_object_drop_ref = function(arg0) {
+        takeObject(arg0);
     };
     imports.wbg.__wbg_crypto_1d1f22824a6a080c = function(arg0) {
         const ret = getObject(arg0).crypto;

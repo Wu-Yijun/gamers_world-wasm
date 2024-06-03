@@ -2,6 +2,13 @@
 /* eslint-disable */
 /**
 */
+export enum Ent {
+  NULL = 0,
+  Gold = 1,
+  Knife = 2,
+}
+/**
+*/
 export class Cell {
   free(): void;
 /**
@@ -22,6 +29,102 @@ export class Cell {
 /**
 */
   z: number;
+}
+/**
+*/
+export class Enchant {
+  free(): void;
+/**
+* 附魔效率
+*/
+  eff: number;
+}
+/**
+*/
+export class Enemy {
+  free(): void;
+/**
+*/
+  x: number;
+/**
+*/
+  y: number;
+/**
+*/
+  z: number;
+}
+/**
+*/
+export class Entity {
+  free(): void;
+/**
+* @param {number} x
+* @param {number} y
+* @param {number} z
+* @returns {Entity}
+*/
+  static new(x: number, y: number, z: number): Entity;
+/**
+*/
+  e: Ent;
+/**
+*/
+  exp: number;
+/**
+*/
+  gold: number;
+/**
+*/
+  knife: Knife;
+/**
+*/
+  x: number;
+/**
+*/
+  y: number;
+/**
+*/
+  z: number;
+}
+/**
+* 近战武器
+*/
+export class Knife {
+  free(): void;
+/**
+* 攻击角度范围
+*/
+  angle: number;
+/**
+* 弹射物(远程)防御的基础格挡
+*/
+  block: number;
+/**
+* 伤害, 决定攻击的基础伤害
+*/
+  damage: number;
+/**
+* 附魔
+*/
+  enchant: Enchant;
+/**
+* 近战防御的基础格挡
+*/
+  parry: number;
+/**
+* 攻击距离
+*/
+  radius: number;
+/**
+* 攻速, 决定攻击的频率
+* 会受灵巧的影响
+*/
+  speed: number;
+/**
+* 重量, 决定攻击的基础速度
+* 还会影响体力的消耗
+*/
+  weight: number;
 }
 /**
 */
@@ -201,6 +304,12 @@ export class World {
 */
   get_h(x: number, y: number): number;
 /**
+* @param {number} x
+* @param {number} y
+* @param {number} z
+*/
+  add_entity(x: number, y: number, z: number): void;
+/**
 */
   h: number;
 /**
@@ -212,6 +321,36 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
+  readonly __wbg_cell_free: (a: number) => void;
+  readonly __wbg_get_cell_x: (a: number) => number;
+  readonly __wbg_set_cell_x: (a: number, b: number) => void;
+  readonly __wbg_get_cell_y: (a: number) => number;
+  readonly __wbg_set_cell_y: (a: number, b: number) => void;
+  readonly __wbg_get_cell_z: (a: number) => number;
+  readonly __wbg_set_cell_z: (a: number, b: number) => void;
+  readonly __wbg_get_cell_r: (a: number) => number;
+  readonly __wbg_set_cell_r: (a: number, b: number) => void;
+  readonly __wbg_get_cell_g: (a: number) => number;
+  readonly __wbg_set_cell_g: (a: number, b: number) => void;
+  readonly __wbg_get_cell_b: (a: number) => number;
+  readonly __wbg_set_cell_b: (a: number, b: number) => void;
+  readonly __wbg_world_free: (a: number) => void;
+  readonly __wbg_get_world_h: (a: number) => number;
+  readonly __wbg_set_world_h: (a: number, b: number) => void;
+  readonly __wbg_get_world_w: (a: number) => number;
+  readonly __wbg_set_world_w: (a: number, b: number) => void;
+  readonly world_new: (a: number, b: number) => number;
+  readonly world_start: (a: number, b: number) => void;
+  readonly world_get_vec: (a: number) => number;
+  readonly world_get_vec_len: (a: number) => number;
+  readonly world_get_indices: (a: number) => number;
+  readonly world_get_indices_len: (a: number) => number;
+  readonly world_print: (a: number, b: number, c: number) => void;
+  readonly world_tick: (a: number) => void;
+  readonly world_to_update_map: (a: number) => number;
+  readonly world_to_update_index: (a: number) => number;
+  readonly world_get_h: (a: number, b: number, c: number) => number;
+  readonly world_add_entity: (a: number, b: number, c: number, d: number) => void;
   readonly __wbg_player_free: (a: number) => void;
   readonly __wbg_get_player_x: (a: number) => number;
   readonly __wbg_set_player_x: (a: number, b: number) => void;
@@ -259,35 +398,49 @@ export interface InitOutput {
   readonly player_dash: (a: number, b: number, c: number, d: number) => void;
   readonly player_is_dashing: (a: number) => number;
   readonly player_get_dash_deg: (a: number) => number;
-  readonly __wbg_cell_free: (a: number) => void;
-  readonly __wbg_get_cell_x: (a: number) => number;
-  readonly __wbg_set_cell_x: (a: number, b: number) => void;
-  readonly __wbg_get_cell_y: (a: number) => number;
-  readonly __wbg_set_cell_y: (a: number, b: number) => void;
-  readonly __wbg_get_cell_z: (a: number) => number;
-  readonly __wbg_set_cell_z: (a: number, b: number) => void;
-  readonly __wbg_get_cell_r: (a: number) => number;
-  readonly __wbg_set_cell_r: (a: number, b: number) => void;
-  readonly __wbg_get_cell_g: (a: number) => number;
-  readonly __wbg_set_cell_g: (a: number, b: number) => void;
-  readonly __wbg_get_cell_b: (a: number) => number;
-  readonly __wbg_set_cell_b: (a: number, b: number) => void;
-  readonly __wbg_world_free: (a: number) => void;
-  readonly __wbg_get_world_h: (a: number) => number;
-  readonly __wbg_set_world_h: (a: number, b: number) => void;
-  readonly __wbg_get_world_w: (a: number) => number;
-  readonly __wbg_set_world_w: (a: number, b: number) => void;
-  readonly world_new: (a: number, b: number) => number;
-  readonly world_start: (a: number, b: number) => void;
-  readonly world_get_vec: (a: number) => number;
-  readonly world_get_vec_len: (a: number) => number;
-  readonly world_get_indices: (a: number) => number;
-  readonly world_get_indices_len: (a: number) => number;
-  readonly world_print: (a: number, b: number, c: number) => void;
-  readonly world_tick: (a: number) => void;
-  readonly world_to_update_map: (a: number) => number;
-  readonly world_to_update_index: (a: number) => number;
-  readonly world_get_h: (a: number, b: number, c: number) => number;
+  readonly __wbg_entity_free: (a: number) => void;
+  readonly __wbg_get_entity_x: (a: number) => number;
+  readonly __wbg_set_entity_x: (a: number, b: number) => void;
+  readonly __wbg_get_entity_y: (a: number) => number;
+  readonly __wbg_set_entity_y: (a: number, b: number) => void;
+  readonly __wbg_get_entity_z: (a: number) => number;
+  readonly __wbg_set_entity_z: (a: number, b: number) => void;
+  readonly __wbg_get_entity_e: (a: number) => number;
+  readonly __wbg_set_entity_e: (a: number, b: number) => void;
+  readonly __wbg_get_entity_gold: (a: number) => number;
+  readonly __wbg_set_entity_gold: (a: number, b: number) => void;
+  readonly __wbg_get_entity_knife: (a: number) => number;
+  readonly __wbg_set_entity_knife: (a: number, b: number) => void;
+  readonly entity_new: (a: number, b: number, c: number) => number;
+  readonly __wbg_knife_free: (a: number) => void;
+  readonly __wbg_get_knife_weight: (a: number) => number;
+  readonly __wbg_set_knife_weight: (a: number, b: number) => void;
+  readonly __wbg_get_knife_speed: (a: number) => number;
+  readonly __wbg_set_knife_speed: (a: number, b: number) => void;
+  readonly __wbg_get_knife_radius: (a: number) => number;
+  readonly __wbg_set_knife_radius: (a: number, b: number) => void;
+  readonly __wbg_get_knife_angle: (a: number) => number;
+  readonly __wbg_set_knife_angle: (a: number, b: number) => void;
+  readonly __wbg_get_knife_parry: (a: number) => number;
+  readonly __wbg_set_knife_parry: (a: number, b: number) => void;
+  readonly __wbg_get_knife_block: (a: number) => number;
+  readonly __wbg_set_knife_block: (a: number, b: number) => void;
+  readonly __wbg_get_knife_enchant: (a: number) => number;
+  readonly __wbg_set_knife_enchant: (a: number, b: number) => void;
+  readonly __wbg_enchant_free: (a: number) => void;
+  readonly __wbg_get_enchant_eff: (a: number) => number;
+  readonly __wbg_set_enchant_eff: (a: number, b: number) => void;
+  readonly __wbg_get_knife_damage: (a: number) => number;
+  readonly __wbg_get_entity_exp: (a: number) => number;
+  readonly __wbg_set_knife_damage: (a: number, b: number) => void;
+  readonly __wbg_set_entity_exp: (a: number, b: number) => void;
+  readonly __wbg_enemy_free: (a: number) => void;
+  readonly __wbg_get_enemy_x: (a: number) => number;
+  readonly __wbg_set_enemy_x: (a: number, b: number) => void;
+  readonly __wbg_get_enemy_y: (a: number) => number;
+  readonly __wbg_set_enemy_y: (a: number, b: number) => void;
+  readonly __wbg_get_enemy_z: (a: number) => number;
+  readonly __wbg_set_enemy_z: (a: number, b: number) => void;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_add_to_stack_pointer: (a: number) => number;

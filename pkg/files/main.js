@@ -18,11 +18,16 @@ const info_dom = document.getElementById("info");
 
 let lastTime = Date.now();
 function renderLoop() {
+    if (player.player.is_dashing()) {
+        webgl.to_update_view();
+    }
+
     setTransform();
 
     // update the fps
     fps_value.innerHTML = Math.round(1000 / (Date.now() - lastTime));
     lastTime = Date.now();
+
 
     game.world.tick();
     canvas.tick();
@@ -33,9 +38,6 @@ function renderLoop() {
         webgl.updateIndex(game.indices);
     }
 
-    if (player.player.is_dashing()) {
-        webgl.to_update_view();
-    }
 
     canvas.render(game.res, trans);
 

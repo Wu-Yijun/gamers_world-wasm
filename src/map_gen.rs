@@ -1,5 +1,7 @@
 use std::vec;
 
+use wasm_bindgen::prelude::*;
+
 use crate::{Cell, World};
 
 use rand::prelude::*;

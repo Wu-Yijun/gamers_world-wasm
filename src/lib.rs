@@ -6,7 +6,7 @@ use rand::{rngs::StdRng, Rng, SeedableRng};
 use wasm_bindgen::prelude::*;
 
 mod entity;
-use entity::Entity;
+use entity::{Ent, Entity, Knife};
 mod enemy;
 use enemy::Enemy;
 
@@ -142,26 +142,64 @@ impl World {
     ) {
         // randomly generate an entity
         // let mut rng = rand::thread_rng();
-        // if self.rng.gen_range(0..100) < 0 {
-        //     let x = (self.w - 1) as f32 / 4.0;
-        //     let y = (self.h - 1) as f32 / 4.0;
-        //     let x = self.rng.gen_range(-x..x);
-        //     let y = self.rng.gen_range(-y..y);
+        if self.rng.gen_range(0..100) < 5 {
+            let x = (self.w - 1) as f32 / 4.0;
+            let y = (self.h - 1) as f32 / 4.0;
+            let x = self.rng.gen_range(-x..x);
+            let y = self.rng.gen_range(-y..y);
+            let lv = self.rng.gen_range(player.lv / 2 + 1..player.lv * 2);
 
-        //     // self.add_entity(x, y, z, e);
-        //     enemy.add_enemy(self, x, y, 1);
-        // }
+            // self.add_entity(x, y, z, e);
+            enemy.add_enemy(self, x, y, 1, lv);
+        }
 
         // update entities
         entity.get().retain(|e| !e.to_remove);
 
         // player and mobs
-        log("player and mobs");
+        // log("player and mobs");
+        let (mut distance2, mut id, mut cnt) = (100.0 * 100.0, 0, 0);
         for e in enemy.get() {
-            player.interact(e);
-            e.z = self.get_h(e.x, e.y)
+            let d2 = player.interact(e);
+            e.z = self.get_h(e.x, e.y);
+
+            if d2 < distance2 {
+                id = cnt;
+                distance2 = d2;
+            }
+            cnt += 1;
         }
-        enemy.get().retain(|e| e.hp >= 0.0);
+        player.attack(enemy.get(), id);
+        enemy.get().retain(|e| {
+            if e.to_remove {
+                return false;
+            }
+            if e.hp >= 0.0 {
+                return true;
+            }
+            // 怪物死亡, 计算掉落物
+            // 经验加 1 * lv
+            // 金币加 2 * lv
+            // 血量加 1.5 * lv
+            player.exp += 1.0 * e.lv as f32;
+            player.gold += 2 * e.lv;
+            player.hp += 1.5 * e.lv as f32;
+            player.hp_max += 0.5 * (e.lv as f32).sqrt();
+            // 掉落金币
+            let gold = Entity {
+                to_remove: false,
+                x: e.x,
+                y: e.y,
+                z: e.z,
+                e: Ent::Gold,
+                gold: 5 * e.lv,
+                exp: 0.5 * e.lv as f32,
+                knife: Knife::default(),
+            };
+            entity.push(gold);
+            log("Kiled");
+            false
+        });
     }
 
     pub fn to_update_map(&mut self) -> bool {
@@ -233,10 +271,13 @@ impl Entities {
     pub fn get(&mut self) -> &mut Vec<Entity> {
         &mut self.0
     }
+    pub fn push(&mut self, e: Entity) {
+        self.0.push(e);
+    }
 }
 #[wasm_bindgen]
 impl Entities {
-    pub fn new()->Self{
+    pub fn new() -> Self {
         Self(vec![])
     }
     pub fn get_len(&self) -> usize {
@@ -274,17 +315,23 @@ impl Enemies {
     pub fn get(&mut self) -> &mut Vec<Enemy> {
         &mut self.0
     }
+    pub fn add_enemy(&mut self, world: &mut World, x: f32, y: f32, tp: i32, lv: u32) {
+        let z = world.get_h(x, y);
+        let mut em = Enemy::new(x, y, z, tp, lv);
+        em.atk *= world.rng.gen_range(0.8..1.2);
+        em.def *= world.rng.gen_range(0.8..1.2);
+        let s = em.get_speed();
+        s.0 *= world.rng.gen_range(0.8..1.2);
+        s.1 *= world.rng.gen_range(0.8..1.2);
+        self.0.push(em);
+    }
 }
 #[wasm_bindgen]
 impl Enemies {
-    pub fn new()->Self{
+    pub fn new() -> Self {
         Self(vec![])
     }
-    pub fn add_enemy(&mut self, world: &World, x: f32, y: f32, tp: i32, lv: u32) {
-        let z = world.get_h(x, y);
-        let mut em = Enemy::new(x, y, z, tp, lv);
-        self.0.push(em);
-    }
+
     pub fn get_len(&self) -> usize {
         self.0.len()
     }

@@ -44,11 +44,19 @@ async function load_all() {
     await load_imgs('knife',
         {
             k1: "../res/knife.png",
+            s1: "../res/slash.png"
         }
     );
     await load_imgs('monster',
         {
             m1: "../res/monster.png",
+            m1a: "../res/monster-angry.png",
+            m1h: "../res/monster-hit.png",
+        }
+    );
+    await load_imgs('ui',
+        {
+            panel: "../res/panel.png",
         }
     );
 }

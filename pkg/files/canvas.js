@@ -37,8 +37,11 @@ export const player = {
     mobs: {
         '1': {
             res: 'm1',
+            angry: 'm1a',
+            weapon: 'm1h',
             w: 40,
-            h: 40,
+            h: 70,
+            bar: 50,
         }
     }
 };
@@ -80,7 +83,7 @@ function drawEntity(scale) {
         // 只需要 位置 和id 即可
         let num = player.entity.get_len();
         for (let i = 0; i < num; i++) {
-            const entity = player.entity.get_i(i, player.player);
+            const entity = player.entity.get_remove(i, player.player);
             let pos = glMatrix.vec4.fromValues(entity[0], entity[1], entity[2], 1.0);
             glMatrix.vec4.transformMat4(pos, pos, mat1);
             glMatrix.vec4.transformMat4(pos, pos, mat2);
@@ -136,6 +139,7 @@ function drawEntity(scale) {
 
 
 function drawMobs(scale) {
+    // const ui = player.ui;
     const mat1 = player.webgl.getModelViewMatrix();
     const mat2 = player.webgl.getProjectionMatrix();
     const hei = ctx.canvas.height / 2;
@@ -158,15 +162,56 @@ function drawMobs(scale) {
                 continue;
             }
             const mob_type = player.mobs[mob.tp];
-            let gh = mob_type.h * scale;
-            let gw = mob_type.w * scale;
+            const gh = mob_type.h * scale;
+            const ghbar = mob_type.bar * scale;
+            const gw = mob_type.w * scale;
             let img = player.res.monster && player.res.monster[mob_type.res];
-            // mob
-            img && ctx.drawImage(img, x - gw / 2, y - gh, gw, gh);
+            if (mob.is_resting()) {
+                ctx.filter = 'grayscale(100%)';
+                img && ctx.drawImage(img, x - gw / 2, y - gh, gw, gh);
+                ctx.filter = 'grayscale(0%)';
+            } else if (mob.is_anger()) {
+                let img = player.res.monster && player.res.monster[mob_type.angry];
+                img && ctx.drawImage(img, x - gw / 2, y - gh, gw, gh);
+            } else {
+                img && ctx.drawImage(img, x - gw / 2, y - gh, gw, gh);
+            }
             // shadow
             ctxS.beginPath();
             ctxS.ellipse(x, y, gw / 2.5, gh / 7, 0, 0, 2 * Math.PI);
             ctxS.fill();
+
+            if (mob.is_found()) {
+                // 在头顶绘制血条和体力条
+                ctx.fillStyle = player.colors.hp_max;
+                ctx.fillRect(x - gw / 2, y - ghbar - scale * 6, gw, scale * 2);
+                ctx.fillStyle = player.colors.hp;
+                ctx.fillRect(x - gw / 2, y - ghbar - scale * 6, gw * mob.hp / mob.hp_max, scale * 2);
+
+                ctx.fillStyle = player.colors.sp_max;
+                ctx.fillRect(x - gw / 2, y - ghbar - scale * 3, gw, scale * 2);
+                ctx.fillStyle = player.colors.sp;
+                if (mob.is_resting()) {
+                    ctx.fillRect(x - gw / 2, y - ghbar - scale * 3, gw * (1 - mob.get_resting_progress()), scale * 2);
+                } else {
+                    ctx.fillRect(x - gw / 2, y - ghbar - scale * 3, gw * mob.sp / mob.sp_max, scale * 2);
+                }
+
+                // 在血条上方绘制等级
+                ctx.font = scale * 8 + "px sans-serif";
+                ctx.fillStyle = 'black';
+                ctx.fillText("Lv. " + mob.lv, x - scale * 6, y - ghbar - scale * 10)
+                // ctx.fill();
+            }
+
+            let prog = mob.get_attacking();
+            if (prog > 0) {
+                let img = player.res.monster && player.res.monster[mob_type.weapon];
+                ctx.save();
+                ctx.rotate(prog - 1);
+                img && ctx.drawImage(img, x - gw / 2, y - gh, gw, gh);
+                ctx.restore();
+            }
         }
     }
 }
@@ -194,8 +239,22 @@ function drawPlayer(scale) {
             }
             let ig = player.res.man[player.step_list[Math.floor(player.step)]];
             ig && ctx.drawImage(ig, - imgw / 2, - imgh, imgw, imgh);
+            if (player.dir == 1) {
+                ctx.scale(-1, 1);
+            }
+
+            let prog = player.player.get_attack_prog();
+            if (prog > 0.5) {
+                const sw = 50 * scale * player.player.attack_range;
+                const sh = 20 * scale * player.player.attack_range;
+                let ig = player.res.knife && player.res.knife['s1'];
+                ctx.translate(0, -imgh / 2)
+                ctx.rotate(3.14 - prog * 6.28)
+                ig && ctx.drawImage(ig, - sw / 2, - sh / 2, sw, sh);
+            }
         }
     }
+
 }
 
 function drawUI() {
@@ -232,11 +291,20 @@ function drawUI() {
     const sp_max = player.player.sp_max;
     ctx.fillStyle = player.colors.sp_max;
     ctx.font = Math.round(ui * 2.5) + "px sans-serif";
-    ctx.fillText("SP", 5 * ui, 2 * ui);
-    ctx.fillRect(10 * ui, 0, ui * sp_max / 4, 2 * ui);
-    ctx.fillText(`${Math.round(sp)}/${Math.round(sp_max)}`, (14 + sp_max / 4) * ui, 2 * ui);
-    ctx.fillStyle = player.colors.sp;
-    ctx.fillRect(10.1 * ui, 0.1 * ui, ui * (sp / 4 - 0.2), 1.8 * ui);
+    if (player.player.is_resting()) {
+        ctx.fillText("恢复中", 2 * ui, 2 * ui);
+        ctx.fillRect(10 * ui, 0, ui * sp_max / 4, 2 * ui);
+        let prog = 1 - player.player.get_resting_progress();
+        ctx.fillText(`进度: ${Math.round(prog * 100)}%`, (14 + sp_max / 4) * ui, 2 * ui);
+        ctx.fillStyle = player.colors.sp;
+        ctx.fillRect(10.1 * ui, 0.1 * ui, ui * ((sp_max * 0.8 * prog) / 4 - 0.2), 1.8 * ui);
+    } else {
+        ctx.fillText("SP", 5 * ui, 2 * ui);
+        ctx.fillRect(10 * ui, 0, ui * sp_max / 4, 2 * ui);
+        ctx.fillText(`${Math.round(sp)}/${Math.round(sp_max)}`, (14 + sp_max / 4) * ui, 2 * ui);
+        ctx.fillStyle = player.colors.sp;
+        ctx.fillRect(10.1 * ui, 0.1 * ui, ui * (sp / 4 - 0.2), 1.8 * ui);
+    }
 
     // Draw exp at the centre bottum of screen
     const level = player.player.lv;
@@ -251,6 +319,47 @@ function drawUI() {
     ctx.fillStyle = player.colors.exp;
     ctx.fillText(`Lv: ${level} (Exp: ${Math.floor(exp)})`, - 10 * ui, -12 * ui);
     ctx.fillRect(-80 * ui, -10 * ui, ui * 160 * exp / exp_max, ui);
+
+    // Draw property at the left bottum corner of screen
+    {
+
+        ctx.save();
+        ctx.translate(- ctx.canvas.width / 2 + 22 * ui, -20 * ui);
+        let img = player.res.ui && player.res.ui['panel'];
+        img && ctx.drawImage(img, -20 * ui, -15 * ui, 40 * ui, 30 * ui);
+        const sq3 = Math.sqrt(3) / 2;
+        var l;
+        const alpha = ui * 0.3;
+        ctx.fillStyle = "#0220ff21"
+        ctx.fillRect(-22 * ui, -30 * ui, 50 * ui, 60 * ui);
+        ctx.strokeStyle = "#0083"; // 深蓝色外边框
+        ctx.beginPath();
+        l = player.player.atk * alpha;
+        ctx.moveTo(l / 2, l * sq3);
+        l = player.player.def * alpha;
+        ctx.lineTo(l, 0);
+        l = player.player.int * alpha;
+        ctx.lineTo(l / 2, -l * sq3);
+        l = player.player.str * alpha;
+        ctx.lineTo(-l / 2, -l * sq3);
+        l = player.player.agi * alpha;
+        ctx.lineTo(-l, 0);
+        l = player.player.dex * alpha;
+        ctx.lineTo(-l / 2, l * sq3);
+        ctx.fill();
+        ctx.closePath();
+        ctx.stroke()
+        // draw coins above the panel
+        ctx.translate(-18 * ui, -25 * ui);
+        let gold = player.res && player.res.gold;
+        gold && ctx.drawImage(gold, 0, 0, 4 * ui, 6 * ui);
+        ctx.fillStyle = 'yellow'
+        ctx.font = Math.round(ui * 5) + "px sans-serif";
+        ctx.fillText(' = x ' + player.player.gold, 5 * ui, 5 * ui)
+
+        //
+        ctx.restore();
+    }
 
 }
 

@@ -48,14 +48,6 @@ export class Enemies {
 */
   static new(): Enemies;
 /**
-* @param {World} world
-* @param {number} x
-* @param {number} y
-* @param {number} tp
-* @param {number} lv
-*/
-  add_enemy(world: World, x: number, y: number, tp: number, lv: number): void;
-/**
 * @returns {number}
 */
   get_len(): number;
@@ -80,9 +72,29 @@ export class Enemy {
 */
   static new(x: number, y: number, z: number, tp: number, lv: number): Enemy;
 /**
+* @returns {boolean}
+*/
+  is_found(): boolean;
+/**
+* @returns {boolean}
+*/
+  is_attack(): boolean;
+/**
 * @returns {number}
 */
-  attack(): number;
+  get_attacking(): number;
+/**
+* @returns {boolean}
+*/
+  is_anger(): boolean;
+/**
+* @returns {boolean}
+*/
+  is_resting(): boolean;
+/**
+* @returns {number}
+*/
+  get_resting_progress(): number;
 /**
 * @param {number} damage
 */
@@ -93,23 +105,35 @@ export class Enemy {
   is_dead(): boolean;
 /**
 */
+  atk: number;
+/**
+*/
   attack_range: number;
 /**
 */
+  def: number;
+/**
+*/
   hp: number;
+/**
+*/
+  hp_max: number;
+/**
+*/
+  int: number;
 /**
 * level
 */
   lv: number;
 /**
 */
-  max_hp: number;
-/**
-*/
-  max_sp: number;
-/**
-*/
   sp: number;
+/**
+*/
+  sp_max: number;
+/**
+*/
+  to_remove: boolean;
 /**
 * type
 */
@@ -286,6 +310,18 @@ export class Player {
 */
   get_dash_deg(): number;
 /**
+* @returns {number}
+*/
+  get_attack_prog(): number;
+/**
+* @returns {boolean}
+*/
+  is_resting(): boolean;
+/**
+* @returns {number}
+*/
+  get_resting_progress(): number;
+/**
 * 敏捷
 * 增加闪避率，增加暴击率
 * 增加攻击速度
@@ -297,6 +333,10 @@ export class Player {
 * 攻击时伤害加成
 */
   atk: number;
+/**
+* 金币吸引半径
+*/
+  attack_range: number;
 /**
 * 防御力
 * 受伤时减轻伤害
@@ -486,7 +526,6 @@ export interface InitOutput {
   readonly entities_add_entity: (a: number, b: number, c: number, d: number, e: number) => void;
   readonly __wbg_enemies_free: (a: number) => void;
   readonly enemies_new: () => number;
-  readonly enemies_add_enemy: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
   readonly enemies_get_len: (a: number) => number;
   readonly enemies_get_i: (a: number, b: number) => number;
   readonly __wbg_entity_represent_free: (a: number) => void;
@@ -545,12 +584,17 @@ export interface InitOutput {
   readonly __wbg_set_player_luk: (a: number, b: number) => void;
   readonly __wbg_get_player_gold_attraction: (a: number) => number;
   readonly __wbg_set_player_gold_attraction: (a: number, b: number) => void;
+  readonly __wbg_get_player_attack_range: (a: number) => number;
+  readonly __wbg_set_player_attack_range: (a: number, b: number) => void;
   readonly player_new: () => number;
   readonly player_tick: (a: number, b: number) => void;
   readonly player_move_by: (a: number, b: number, c: number, d: number) => void;
   readonly player_dash: (a: number, b: number, c: number, d: number) => void;
   readonly player_is_dashing: (a: number) => number;
   readonly player_get_dash_deg: (a: number) => number;
+  readonly player_get_attack_prog: (a: number) => number;
+  readonly player_is_resting: (a: number) => number;
+  readonly player_get_resting_progress: (a: number) => number;
   readonly __wbg_entity_free: (a: number) => void;
   readonly __wbg_get_entity_to_remove: (a: number) => number;
   readonly __wbg_set_entity_to_remove: (a: number, b: number) => void;
@@ -600,18 +644,31 @@ export interface InitOutput {
   readonly __wbg_set_enemy_tp: (a: number, b: number) => void;
   readonly __wbg_get_enemy_lv: (a: number) => number;
   readonly __wbg_set_enemy_lv: (a: number, b: number) => void;
+  readonly __wbg_get_enemy_to_remove: (a: number) => number;
+  readonly __wbg_set_enemy_to_remove: (a: number, b: number) => void;
   readonly __wbg_get_enemy_hp: (a: number) => number;
   readonly __wbg_set_enemy_hp: (a: number, b: number) => void;
-  readonly __wbg_get_enemy_max_hp: (a: number) => number;
-  readonly __wbg_set_enemy_max_hp: (a: number, b: number) => void;
+  readonly __wbg_get_enemy_hp_max: (a: number) => number;
+  readonly __wbg_set_enemy_hp_max: (a: number, b: number) => void;
   readonly __wbg_get_enemy_sp: (a: number) => number;
   readonly __wbg_set_enemy_sp: (a: number, b: number) => void;
-  readonly __wbg_get_enemy_max_sp: (a: number) => number;
-  readonly __wbg_set_enemy_max_sp: (a: number, b: number) => void;
+  readonly __wbg_get_enemy_sp_max: (a: number) => number;
+  readonly __wbg_set_enemy_sp_max: (a: number, b: number) => void;
+  readonly __wbg_get_enemy_atk: (a: number) => number;
+  readonly __wbg_set_enemy_atk: (a: number, b: number) => void;
+  readonly __wbg_get_enemy_def: (a: number) => number;
+  readonly __wbg_set_enemy_def: (a: number, b: number) => void;
+  readonly __wbg_get_enemy_int: (a: number) => number;
+  readonly __wbg_set_enemy_int: (a: number, b: number) => void;
   readonly __wbg_get_enemy_attack_range: (a: number) => number;
   readonly __wbg_set_enemy_attack_range: (a: number, b: number) => void;
   readonly enemy_new: (a: number, b: number, c: number, d: number, e: number) => number;
-  readonly enemy_attack: (a: number) => number;
+  readonly enemy_is_found: (a: number) => number;
+  readonly enemy_is_attack: (a: number) => number;
+  readonly enemy_get_attacking: (a: number) => number;
+  readonly enemy_is_anger: (a: number) => number;
+  readonly enemy_is_resting: (a: number) => number;
+  readonly enemy_get_resting_progress: (a: number) => number;
   readonly enemy_take_damage: (a: number, b: number) => void;
   readonly enemy_is_dead: (a: number) => number;
   readonly __wbindgen_malloc: (a: number, b: number) => number;

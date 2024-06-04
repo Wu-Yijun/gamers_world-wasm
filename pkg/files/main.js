@@ -324,7 +324,7 @@ async function init() {
     webgl.to_update_view();
 
 
-    enemy.add_enemy(world, 10, 10, 1, 5);
+    // enemy.add_enemy(world, 10, 10, 1, 5);
 }
 
 await init();

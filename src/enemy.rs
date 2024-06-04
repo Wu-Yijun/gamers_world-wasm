@@ -16,15 +16,16 @@ pub struct Enemy {
     pub tp: i32,
     /// level
     pub lv: u32,
+    pub to_remove: bool,
 
     pub hp: f32,
-    pub max_hp: f32,
+    pub hp_max: f32,
     pub sp: f32,
-    pub max_sp: f32,
+    pub sp_max: f32,
 
-    atk: f32,
-    def: f32,
-    int: f32,
+    pub atk: f32,
+    pub def: f32,
+    pub int: f32,
 
     /// 移动速度, 最大速度
     /// (速度, 加速度)
@@ -38,6 +39,11 @@ pub struct Enemy {
     /// 攻击 cd
     /// (当前计时，总计时，是否触发攻击)
     attack_tick: (i32, i32, bool),
+    /// 攻击中 cd
+    attacking_tick: (i32, i32),
+    /// 休息记录, 用于恢复 sp
+    /// (当前tick, 总tick)
+    resting_tick: (i32, i32, bool),
     /// 仇恨记录
     /// (当前仇恨, 标记敌人阈值)
     hate: (f32, f32),
@@ -56,11 +62,12 @@ impl Enemy {
             tp,
             lv,
             hp: 100.0,
-            max_hp: 100.0,
-            sp: 50.0,
-            max_sp: 50.0,
+            to_remove: false,
+            hp_max: 100.0,
+            sp: 100.0,
+            sp_max: 100.0,
             atk: 10.0,
-            def: 10.0,
+            def: 5.0,
             int: 10.0,
             speed: (1.0, 0.1),
             search_range: 10.0,
@@ -68,17 +75,39 @@ impl Enemy {
 
             search_tick: (0, 30, false),
             attack_tick: (0, 40, false),
+            attacking_tick: (0, 12),
+            resting_tick: (0, 300, false),
             hate: (0.0, 1.0),
             anger: (false, 30.0, 100.0),
         }
     }
 
-    pub fn attack(&self) -> f32 {
-        self.atk
+    pub fn is_found(&self) -> bool {
+        self.search_tick.2
+    }
+    pub fn is_attack(&self) -> bool {
+        self.attack_tick.2
+    }
+    pub fn get_attacking(&self) -> f32 {
+        self.attacking_tick.0 as f32 / self.attacking_tick.1 as f32
+    }
+
+    pub fn is_anger(&self) -> bool {
+        self.anger.0
+    }
+    pub fn is_resting(&self) -> bool {
+        self.resting_tick.2
+    }
+    pub fn get_resting_progress(&self) -> f32 {
+        self.resting_tick.0 as f32 / self.resting_tick.1 as f32
     }
 
     pub fn take_damage(&mut self, damage: f32) {
         self.hp -= damage;
+        self.v.0 *= -0.2;
+        self.v.1 *= -0.2;
+        // self.v.0 *= -2.0;
+        // self.v.1 *= -2.0;
     }
 
     pub fn is_dead(&self) -> bool {
@@ -96,7 +125,10 @@ impl Enemy {
     /// （怪物优先向高仇恨的玩家移动，并攻击该玩家，当仇恨值大于阈值时，会触发暴怒状态，产生增益）
     ///
     /// search 返回值 true 表示发现玩家
-    pub fn search(&mut self, dx: f32, dy: f32, dz: f32, d2: f32, p: &Player) -> bool {
+    pub fn search(&mut self, dx: f32, dy: f32, dz: f32, d2: f32, p: &Player) {
+        if self.to_rest() {
+            return;
+        }
         self.search_tick.0 -= 1;
         if self.search_tick.0 <= 0 {
             // 触发索敌
@@ -161,19 +193,32 @@ impl Enemy {
             self.y += self.v.1 * 0.05;
         }
 
-        crate::log(&format!("distance:{}, hate:{}, anger:{}", d2.sqrt().round(), self.hate.0.round(), self.anger.0));
+        // crate::log(&format!(
+        //     "distance:{}, hate:{}, anger:{}",
+        //     d2.sqrt().round(),
+        //     self.hate.0.round(),
+        //     self.anger.0
+        // ));
         // 如果标记了敌人且进入攻击范围, 触发攻击
 
         // // attack
-        // self.attack_tick.0 -= 1;
-        // if self.attack_tick.0 <= 0 {
-        //     if d2 < self.attack_range * self.attack_range {
-        //         // able to attack
-        //         self.attack_tick.0 = self.attack_tick.1;
-        //         self.attack_tick.2 = true;
-        //     }
-        // }
-        true
+        self.attack_tick.0 -= 1;
+        self.attack_tick.2 = false;
+        if self.attack_tick.0 <= 0 {
+            if d2 < self.attack_range * self.attack_range {
+                // able to attack
+                self.sp -= 5.0;
+                self.attack_tick.0 = self.attack_tick.1;
+                self.attacking_tick.0 = self.attacking_tick.1;
+                self.attack_tick.2 = true;
+            }
+        }
+        if self.attacking_tick.0 > 0 {
+            self.attacking_tick.0 -= 1;
+            // 我们可以设定, 攻击时, 速度降为原先的 1/5
+            self.v.0 *= 0.2;
+            self.v.1 *= 0.2;
+        }
     }
 
     /// 每一tick更新hate
@@ -199,5 +244,43 @@ impl Enemy {
         if self.hate.0 < self.hate.1 {
             self.search_tick.2 = false;
         }
+    }
+
+    pub fn to_rest(&mut self) -> bool {
+        if self.sp > self.sp_max {
+            self.sp = self.sp_max;
+        }
+        if self.sp <= 0.0 {
+            if self.resting_tick.2 {
+                // 休息中
+                self.resting_tick.0 -= 1;
+                if self.resting_tick.0 <= 0 {
+                    // 休息完成
+                    self.sp = self.sp_max * 0.8;
+                    self.resting_tick.2 = false;
+                }
+            } else {
+                // 被击破, 休息以恢复体力
+                self.resting_tick.0 = self.resting_tick.1;
+                self.resting_tick.2 = true;
+                self.attack_tick.2 = false;
+                self.attacking_tick.0 = 0;
+                // 此外, 扣除血量上限的 15 %
+                self.hp -= self.hp_max * 0.15;
+            }
+            true
+        } else {
+            // 缓慢恢复 sp
+            self.sp += self.sp_max * 0.0003;
+            false
+        }
+    }
+
+    pub fn get_speed(&mut self) -> &mut (f32, f32) {
+        &mut self.speed
+    }
+
+    pub fn add_hate(&mut self, hate: f32) {
+        self.hate.0 += hate;
     }
 }

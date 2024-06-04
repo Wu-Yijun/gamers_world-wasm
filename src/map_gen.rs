@@ -152,10 +152,10 @@ impl MapGen {
         }
     }
 
-    pub fn gen(&mut self, seed: u64) {
-        let mut rng = rand::rngs::StdRng::seed_from_u64(seed);
+    pub fn gen(&mut self, rng: &mut StdRng) {
+        // let mut rng = ;
         let mt = self.gen_montain(
-            &mut rng,
+            rng,
             GenMontainParams {
                 num1: (10, 15),
                 num2: (5, 15),
@@ -183,7 +183,7 @@ impl MapGen {
         );
         self.montain_line = mt;
         let mt = self.gen_montain(
-            &mut rng,
+            rng,
             GenMontainParams {
                 num1: (5, 10),
                 num2: (3, 6),
@@ -201,7 +201,7 @@ impl MapGen {
         );
         self.sea_line = mt;
 
-        self.gen_sealevel(&mut rng);
+        self.gen_sealevel(rng);
     }
 
     pub fn with_cell(&self, cells: &mut Vec<Cell>) {
@@ -377,8 +377,8 @@ fn normalizef64(x: f64, y: f64, z: f64) -> (f64, f64, f64) {
 
 #[test]
 fn test() {
-    let mut wd = World::new(4, 4);
-    wd.start(124);
+    let mut wd = World::new(4, 4, 124);
+    wd.start();
 
     println!("{:#?}", wd.cells);
 

@@ -46,6 +46,11 @@ async function load_all() {
             k1: "../res/knife.png",
         }
     );
+    await load_imgs('monster',
+        {
+            m1: "../res/monster.png",
+        }
+    );
 }
 
 load_all().then((e) => {

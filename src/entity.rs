@@ -9,7 +9,7 @@ pub struct Entity {
     pub z: f32,
     pub e: Ent,
     pub gold: u32,
-    pub exp: f64,
+    pub exp: f32,
     pub knife: Knife,
 
 }
@@ -66,22 +66,22 @@ pub enum Ent {
 #[wasm_bindgen]
 pub struct Knife {
     /// 伤害, 决定攻击的基础伤害
-    pub damage: f64,
+    pub damage: f32,
     /// 重量, 决定攻击的基础速度
     /// 还会影响体力的消耗
-    pub weight: f64,
+    pub weight: f32,
     /// 攻速, 决定攻击的频率
     /// 会受灵巧的影响
-    pub speed: f64,
+    pub speed: f32,
     /// 攻击距离
-    pub radius: f64,
+    pub radius: f32,
     /// 攻击角度范围
-    pub angle: f64,
+    pub angle: f32,
 
     /// 近战防御的基础格挡
-    pub parry: f64,
+    pub parry: f32,
     /// 弹射物(远程)防御的基础格挡
-    pub block: f64,
+    pub block: f32,
 
     /// 附魔
     pub enchant: Enchant,
@@ -106,7 +106,7 @@ impl Default for Knife {
 #[wasm_bindgen]
 pub struct Enchant {
     /// 附魔效率
-    pub eff: f64,
+    pub eff: f32,
 }
 
 impl Default for Enchant {

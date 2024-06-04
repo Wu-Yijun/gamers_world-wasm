@@ -2,7 +2,7 @@ mod map_gen;
 mod player;
 mod utils;
 
-use rand::Rng;
+use rand::{rngs::StdRng, Rng, SeedableRng};
 use wasm_bindgen::prelude::*;
 
 mod entity;
@@ -13,13 +13,10 @@ use enemy::Enemy;
 #[wasm_bindgen]
 extern "C" {
     fn alert(s: &str);
+    // console log
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(s: &str);
 }
-
-// #[wasm_bindgen]
-// pub fn greet(s: &str) {
-//     alert(&format!("Hello, hello-wasm! {s}"));
-//     panic!("Console log!");
-// }
 
 #[derive(Debug)]
 #[wasm_bindgen]
@@ -41,18 +38,13 @@ pub struct World {
     map_changed: bool,
     index_changed: bool,
 
-    entities: Vec<Entity>,
-    enemies: Vec<Enemy>,
-
-    // player: (f32, f32, f32),
-    // player_dir: (f32, f32, f32),
+    rng: StdRng,
 }
 
 #[wasm_bindgen]
 impl World {
-    pub fn new(width: usize, height: usize) -> Self {
-        use rand::prelude::*;
-        let mut rng = rand::thread_rng();
+    pub fn new(width: usize, height: usize, seed: u64) -> Self {
+        let mut rng = rand::rngs::StdRng::seed_from_u64(seed);
         let w = width;
         let h = height;
         let mut cells = Vec::new();
@@ -67,14 +59,14 @@ impl World {
                 cells.push(Cell {
                     x,
                     y,
-                    // z: rng.gen_range(0.0..0.008),
-                    z: rng.gen_range(0.0..0.8),
-                    r: rng.gen_range(0.0..1.0),
-                    g: rng.gen_range(0.0..1.0),
-                    b: rng.gen_range(0.0..1.0),
-                    // r: 111f32,
-                    // g:222f32,
-                    // b: 333f32,
+                    z: 0.0,
+                    r: 111f32,
+                    g: 222f32,
+                    b: 333f32,
+                    // z: rng.gen_range(0.0..0.8),
+                    // r: rng.gen_range(0.0..1.0),
+                    // g: rng.gen_range(0.0..1.0),
+                    // b: rng.gen_range(0.0..1.0),
                 });
             }
         }
@@ -105,13 +97,12 @@ impl World {
             indices,
             map_changed: false,
             index_changed: false,
-            entities: Vec::new(),
-            enemies: Vec::new(),
+            rng: rng,
         }
     }
-    pub fn start(&mut self, seed: u64) {
+    pub fn start(&mut self) {
         let mut mpg = map_gen::MapGen::new(self.w as f64, self.h as f64);
-        mpg.gen(seed);
+        mpg.gen(&mut self.rng);
         mpg.with_cell(&mut self.cells);
 
         self.map_changed = true;
@@ -143,20 +134,34 @@ impl World {
         printfn.call1(&this, &value).unwrap();
     }
 
-    pub fn tick(&mut self) {
+    pub fn tick(
+        &mut self,
+        player: &mut player::Player,
+        entity: &mut Entities,
+        enemy: &mut Enemies,
+    ) {
         // randomly generate an entity
-        let mut rng = rand::thread_rng();
-        if rng.gen_range(0..100) < 5 {
-            let x = (self.w - 1) as f32 / 2.2;
-            let y = (self.h - 1) as f32 / 2.2;
-            let x = rng.gen_range(-x..x);
-            let y = rng.gen_range(-y..y);
-            let z = self.get_h(x, y);
-            self.add_entity(x, y, z, rng.gen_range(1..3));
-        }
+        // let mut rng = rand::thread_rng();
+        // if self.rng.gen_range(0..100) < 0 {
+        //     let x = (self.w - 1) as f32 / 4.0;
+        //     let y = (self.h - 1) as f32 / 4.0;
+        //     let x = self.rng.gen_range(-x..x);
+        //     let y = self.rng.gen_range(-y..y);
+
+        //     // self.add_entity(x, y, z, e);
+        //     enemy.add_enemy(self, x, y, 1);
+        // }
 
         // update entities
-        self.entities.retain(|e| !e.to_remove);
+        entity.get().retain(|e| !e.to_remove);
+
+        // player and mobs
+        log("player and mobs");
+        for e in enemy.get() {
+            player.interact(e);
+            e.z = self.get_h(e.x, e.y)
+        }
+        enemy.get().retain(|e| e.hp >= 0.0);
     }
 
     pub fn to_update_map(&mut self) -> bool {
@@ -220,22 +225,28 @@ impl World {
             }
         }
     }
+}
 
-    pub fn add_entity(&mut self, x: f32, y: f32, z: f32, e: isize) {
-        let mut et = Entity::new(x, y, z);
-        et.e = if e == 1 {
-            entity::Ent::Gold
-        } else {
-            entity::Ent::Knife
-        };
-        self.entities.push(et);
+#[wasm_bindgen]
+pub struct Entities(Vec<Entity>);
+impl Entities {
+    pub fn get(&mut self) -> &mut Vec<Entity> {
+        &mut self.0
     }
-
-    pub fn get_entity_len(&self) -> usize {
-        self.entities.len()
+}
+#[wasm_bindgen]
+impl Entities {
+    pub fn new()->Self{
+        Self(vec![])
     }
-    pub fn get_entity(&mut self, index: usize, player: &mut player::Player) -> Entity_Represent {
-        let e = &mut self.entities[index];
+    pub fn get_len(&self) -> usize {
+        self.0.len()
+    }
+    pub fn get_i(&self, index: usize) -> Entity {
+        self.0[index].clone()
+    }
+    pub fn get_remove(&mut self, index: usize, player: &mut player::Player) -> Entity_Represent {
+        let e = &mut self.0[index];
         let dx = e.x - player.x;
         let dy = e.y - player.y;
         let dz = e.z - player.z;
@@ -246,9 +257,51 @@ impl World {
         }
         Entity_Represent(e.x, e.y, e.z, e.e as isize, e.to_remove)
     }
+    pub fn add_entity(&mut self, x: f32, y: f32, z: f32, e: isize) {
+        let mut et = Entity::new(x, y, z);
+        et.e = if e == 1 {
+            entity::Ent::Gold
+        } else {
+            entity::Ent::Knife
+        };
+        self.0.push(et);
+    }
+}
+
+#[wasm_bindgen]
+pub struct Enemies(Vec<Enemy>);
+impl Enemies {
+    pub fn get(&mut self) -> &mut Vec<Enemy> {
+        &mut self.0
+    }
+}
+#[wasm_bindgen]
+impl Enemies {
+    pub fn new()->Self{
+        Self(vec![])
+    }
+    pub fn add_enemy(&mut self, world: &World, x: f32, y: f32, tp: i32, lv: u32) {
+        let z = world.get_h(x, y);
+        let mut em = Enemy::new(x, y, z, tp, lv);
+        self.0.push(em);
+    }
+    pub fn get_len(&self) -> usize {
+        self.0.len()
+    }
+    /// NOTE: this is a copied enemy, not a reference
+    pub fn get_i(&self, index: usize) -> Enemy {
+        self.0[index]
+    }
 }
 
 /// Represents a single entity in the game.
 /// (x, y, z, type, to_remove)
 #[wasm_bindgen]
 pub struct Entity_Represent(pub f32, pub f32, pub f32, pub isize, pub bool);
+
+#[test]
+fn test() {
+    let mut wd = World::new(4, 4, 123);
+    wd.start();
+    let h = wd.get_h(0.0, 0.0);
+}

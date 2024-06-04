@@ -1,4 +1,4 @@
-import { Player, World } from "./gamers_world_wasm.js";
+import { Enemies, Entities, Player, World } from "./gamers_world_wasm.js";
 
 const myCanvas2D = document.getElementById('game2d');
 const ctx = myCanvas2D.getContext('2d');
@@ -14,6 +14,8 @@ const data = {
 export const player = {
     player: new Player(),
     world: new World(),
+    entity: new Entities(),
+    enemy: new Enemies(),
     res: null,
     webgl: null,
     dir: 1,
@@ -30,6 +32,14 @@ export const player = {
         sp_max: '#834e00',
         exp: '#00ff00',
         exp_max: '#00561f',
+    },
+
+    mobs: {
+        '1': {
+            res: 'm1',
+            w: 40,
+            h: 40,
+        }
     }
 };
 
@@ -47,6 +57,8 @@ export function render(trans_scale) {
 
     // Draw the entities
     drawEntity(scale);
+
+    drawMobs(scale);
 
     drawPlayer(scale);
 
@@ -66,9 +78,9 @@ function drawEntity(scale) {
 
     if (mat1 && mat2) {
         // 只需要 位置 和id 即可
-        let num = player.world.get_entity_len();
+        let num = player.entity.get_len();
         for (let i = 0; i < num; i++) {
-            const entity = player.world.get_entity(i, player.player);
+            const entity = player.entity.get_i(i, player.player);
             let pos = glMatrix.vec4.fromValues(entity[0], entity[1], entity[2], 1.0);
             glMatrix.vec4.transformMat4(pos, pos, mat1);
             glMatrix.vec4.transformMat4(pos, pos, mat2);
@@ -118,6 +130,43 @@ function drawEntity(scale) {
         } else if (entity.type == 2) {
             let img = player.res.knife.k1;
             img && ctx.drawImage(img, entity.x - kw / 2, entity.y - kh, kw, kh);
+        }
+    }
+}
+
+
+function drawMobs(scale) {
+    const mat1 = player.webgl.getModelViewMatrix();
+    const mat2 = player.webgl.getProjectionMatrix();
+    const hei = ctx.canvas.height / 2;
+    const wei = ctx.canvas.width / 2;
+
+    if (mat1 && mat2) {
+        // 只需要 位置 和id 即可
+        let num = player.enemy.get_len();
+        for (let i = 0; i < num; i++) {
+            const mob = player.enemy.get_i(i);
+            let pos = glMatrix.vec4.fromValues(mob.x, mob.y, mob.z, 1.0);
+            glMatrix.vec4.transformMat4(pos, pos, mat1);
+            glMatrix.vec4.transformMat4(pos, pos, mat2);
+
+            let x = pos[0] / pos[3] * wei;
+            let y = -pos[1] / pos[3] * hei;
+            let to_hide = pos[2] / pos[3];
+
+            if (to_hide > 1 || to_hide < 0) {
+                continue;
+            }
+            const mob_type = player.mobs[mob.tp];
+            let gh = mob_type.h * scale;
+            let gw = mob_type.w * scale;
+            let img = player.res.monster && player.res.monster[mob_type.res];
+            // mob
+            img && ctx.drawImage(img, x - gw / 2, y - gh, gw, gh);
+            // shadow
+            ctxS.beginPath();
+            ctxS.ellipse(x, y, gw / 2.5, gh / 7, 0, 0, 2 * Math.PI);
+            ctxS.fill();
         }
     }
 }

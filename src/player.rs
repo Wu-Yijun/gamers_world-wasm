@@ -1,5 +1,7 @@
 use wasm_bindgen::prelude::*;
 
+use crate::enemy::Enemy;
+
 const DASHING_TICKS: usize = 5;
 
 #[wasm_bindgen]
@@ -18,51 +20,53 @@ pub struct Player {
     /// 等级
     pub lv: u32,
     /// 经验值
-    pub exp: f64,
+    pub exp: f32,
     /// 每一级升级所需经验
     /// 一般设置为 lv * 10
-    pub exp_max: f64,
+    pub exp_max: f32,
     /// 金钱
     pub gold: u32,
 
     /// 血量
-    pub hp: f64,
+    pub hp: f32,
     /// 最大血量
-    pub hp_max: f64,
+    pub hp_max: f32,
     /// 蓝量
-    pub mp: f64,
+    pub mp: f32,
     /// 最大蓝量
-    pub mp_max: f64,
+    pub mp_max: f32,
     /// 耐力
-    pub sp: f64,
+    pub sp: f32,
     /// 最大耐力
-    pub sp_max: f64,
+    pub sp_max: f32,
 
     /// 攻击力
     /// 攻击时伤害加成
-    pub atk: f64,
+    pub atk: f32,
     /// 防御力
     /// 受伤时减轻伤害
-    pub def: f64,
+    pub def: f32,
     /// 智力
     /// 增强魔法伤害，增强魔法减伤，增加魔力回复速率
-    pub int: f64,
+    pub int: f32,
     /// 力量
     /// 增加移动速度，负重，体力和血量回复速度
     /// 增加攻击速度
-    pub str: f64,
+    pub str: f32,
     /// 敏捷
     /// 增加闪避率，增加暴击率
     /// 增加攻击速度
     /// 增加移动速度，增加闪现距离（同时增加体力消耗）
-    pub agi: f64,
+    pub agi: f32,
     /// 灵巧
     /// 增加命中率，增加暴击伤害
     /// 增加闪现距离（同时增加体力消耗）
-    pub dex: f64,
+    /// 降低被怪物发现的概率
+    pub dex: f32,
     /// 幸运
     /// 增加掉落率，增加暴击率，增加抽卡命中率
-    pub luk: f64,
+    /// 降低被怪物发现的概率
+    pub luk: f32,
 
     /// 金币吸引半径
     pub gold_attraction: f32,
@@ -184,7 +188,15 @@ impl Player {
         if self.exp > self.exp_max {
             self.exp -= self.exp_max;
             self.lv += 1;
-            self.exp_max = 10.0 * self.lv as f64;
+            self.exp_max = 10.0 * self.lv as f32;
         }
+    }
+
+    pub fn interact(&mut self, enemy: &mut Enemy) {
+        let dx = self.x - enemy.x;
+        let dy = self.y - enemy.y;
+        let dz = self.z - enemy.z;
+        let d2 = dx * dx + dy * dy + dz * dz;
+        enemy.search(dx, dy, dz, d2, self);
     }
 }

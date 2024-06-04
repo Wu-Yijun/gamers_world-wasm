@@ -1,5 +1,5 @@
 import { player } from "./canvas.js";
-import initSync, { World, Player } from "./gamers_world_wasm.js"
+import initSync, { World, Player, Enemies, Entities } from "./gamers_world_wasm.js"
 
 const webgl = await import("./webgl.js");
 const wasm = await initSync();
@@ -34,7 +34,7 @@ function renderLoop() {
     frames_value.innerText = framesValue++;
 
 
-    game.world.tick(player.player);
+    game.world.tick(player.player, player.entity, player.enemy);
     canvas.tick();
     if (game.world.to_update_map()) {
         webgl.updateVertex(game.cells);
@@ -269,12 +269,12 @@ function exitGame() {
     try {
         window.opener = null;
         window.open("", "_self");
-    }catch(e) {
+    } catch (e) {
         console.error(e);
     }
     try {
         window.location.href = "about:blank";
-    }catch(e) {
+    } catch (e) {
         console.error(e);
     }
     window.close();
@@ -284,13 +284,17 @@ async function init() {
     console.clear();
 
     const player = Player.new();
+    const enemy = Enemies.new();
+    const entity = Entities.new();
 
     onResize();
     webgl.main(gl, player);
     loadResources();
 
-    // const world = World.new(200, 200);
-    const world = World.new(100, 100);
+    // let seed = BigInt(Math.round(Math.random() * 10000));
+    let seed = BigInt(776);
+    console.log("随机数种子: ", seed);
+    const world = World.new(100, 100, seed);
     game.world = world;
 
     const cellsPtr = world.get_vec();
@@ -306,19 +310,22 @@ async function init() {
     game.width = world.w;
 
     canvas.player.player = player;
+    canvas.player.enemy = enemy;
+    canvas.player.entity = entity;
     canvas.player.world = world;
     canvas.player.webgl = webgl;
     canvas.player.res = game.res;
 
     renderLoop();
 
-    // let seed = BigInt(Math.round(Math.random() * 10000));
-    let seed = BigInt(776);
-    world.start(seed);
-    console.log("随机数种子: ", seed);
+    world.start();
     player.move_by(0, 0, world);
     webgl.setTransform(trans.scale, trans.rotate);
     webgl.to_update_view();
+
+
+    enemy.add_enemy(world, 10, 10, 1, 5);
 }
 
 await init();
+

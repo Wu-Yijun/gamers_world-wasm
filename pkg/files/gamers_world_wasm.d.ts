@@ -41,8 +41,79 @@ export class Enchant {
 }
 /**
 */
+export class Enemies {
+  free(): void;
+/**
+* @returns {Enemies}
+*/
+  static new(): Enemies;
+/**
+* @param {World} world
+* @param {number} x
+* @param {number} y
+* @param {number} tp
+* @param {number} lv
+*/
+  add_enemy(world: World, x: number, y: number, tp: number, lv: number): void;
+/**
+* @returns {number}
+*/
+  get_len(): number;
+/**
+* NOTE: this is a copied enemy, not a reference
+* @param {number} index
+* @returns {Enemy}
+*/
+  get_i(index: number): Enemy;
+}
+/**
+*/
 export class Enemy {
   free(): void;
+/**
+* @param {number} x
+* @param {number} y
+* @param {number} z
+* @param {number} tp
+* @param {number} lv
+* @returns {Enemy}
+*/
+  static new(x: number, y: number, z: number, tp: number, lv: number): Enemy;
+/**
+* @returns {number}
+*/
+  attack(): number;
+/**
+* @param {number} damage
+*/
+  take_damage(damage: number): void;
+/**
+* @returns {boolean}
+*/
+  is_dead(): boolean;
+/**
+*/
+  attack_range: number;
+/**
+*/
+  hp: number;
+/**
+* level
+*/
+  lv: number;
+/**
+*/
+  max_hp: number;
+/**
+*/
+  max_sp: number;
+/**
+*/
+  sp: number;
+/**
+* type
+*/
+  tp: number;
 /**
 */
   x: number;
@@ -52,6 +123,37 @@ export class Enemy {
 /**
 */
   z: number;
+}
+/**
+*/
+export class Entities {
+  free(): void;
+/**
+* @returns {Entities}
+*/
+  static new(): Entities;
+/**
+* @returns {number}
+*/
+  get_len(): number;
+/**
+* @param {number} index
+* @returns {Entity}
+*/
+  get_i(index: number): Entity;
+/**
+* @param {number} index
+* @param {Player} player
+* @returns {Entity_Represent}
+*/
+  get_remove(index: number, player: Player): Entity_Represent;
+/**
+* @param {number} x
+* @param {number} y
+* @param {number} z
+* @param {number} e
+*/
+  add_entity(x: number, y: number, z: number, e: number): void;
 }
 /**
 */
@@ -204,6 +306,7 @@ export class Player {
 * 灵巧
 * 增加命中率，增加暴击伤害
 * 增加闪现距离（同时增加体力消耗）
+* 降低被怪物发现的概率
 */
   dex: number;
 /**
@@ -239,6 +342,7 @@ export class Player {
 /**
 * 幸运
 * 增加掉落率，增加暴击率，增加抽卡命中率
+* 降低被怪物发现的概率
 */
   luk: number;
 /**
@@ -287,13 +391,13 @@ export class World {
 /**
 * @param {number} width
 * @param {number} height
+* @param {bigint} seed
 * @returns {World}
 */
-  static new(width: number, height: number): World;
+  static new(width: number, height: number, seed: bigint): World;
 /**
-* @param {bigint} seed
 */
-  start(seed: bigint): void;
+  start(): void;
 /**
 * @returns {number}
 */
@@ -316,8 +420,11 @@ export class World {
 */
   print(index: number, printfn: Function): void;
 /**
+* @param {Player} player
+* @param {Entities} entity
+* @param {Enemies} enemy
 */
-  tick(): void;
+  tick(player: Player, entity: Entities, enemy: Enemies): void;
 /**
 * @returns {boolean}
 */
@@ -333,23 +440,6 @@ export class World {
 */
   get_h(x: number, y: number): number;
 /**
-* @param {number} x
-* @param {number} y
-* @param {number} z
-* @param {number} e
-*/
-  add_entity(x: number, y: number, z: number, e: number): void;
-/**
-* @returns {number}
-*/
-  get_entity_len(): number;
-/**
-* @param {number} index
-* @param {Player} player
-* @returns {Entity_Represent}
-*/
-  get_entity(index: number, player: Player): Entity_Represent;
-/**
 */
   h: number;
 /**
@@ -361,44 +451,6 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
-  readonly __wbg_entity_free: (a: number) => void;
-  readonly __wbg_get_entity_to_remove: (a: number) => number;
-  readonly __wbg_set_entity_to_remove: (a: number, b: number) => void;
-  readonly __wbg_get_entity_x: (a: number) => number;
-  readonly __wbg_set_entity_x: (a: number, b: number) => void;
-  readonly __wbg_get_entity_y: (a: number) => number;
-  readonly __wbg_set_entity_y: (a: number, b: number) => void;
-  readonly __wbg_get_entity_z: (a: number) => number;
-  readonly __wbg_set_entity_z: (a: number, b: number) => void;
-  readonly __wbg_get_entity_e: (a: number) => number;
-  readonly __wbg_set_entity_e: (a: number, b: number) => void;
-  readonly __wbg_get_entity_gold: (a: number) => number;
-  readonly __wbg_set_entity_gold: (a: number, b: number) => void;
-  readonly __wbg_get_entity_exp: (a: number) => number;
-  readonly __wbg_set_entity_exp: (a: number, b: number) => void;
-  readonly __wbg_get_entity_knife: (a: number) => number;
-  readonly __wbg_set_entity_knife: (a: number, b: number) => void;
-  readonly entity_new: (a: number, b: number, c: number) => number;
-  readonly __wbg_knife_free: (a: number) => void;
-  readonly __wbg_get_knife_weight: (a: number) => number;
-  readonly __wbg_set_knife_weight: (a: number, b: number) => void;
-  readonly __wbg_get_knife_speed: (a: number) => number;
-  readonly __wbg_set_knife_speed: (a: number, b: number) => void;
-  readonly __wbg_get_knife_radius: (a: number) => number;
-  readonly __wbg_set_knife_radius: (a: number, b: number) => void;
-  readonly __wbg_get_knife_angle: (a: number) => number;
-  readonly __wbg_set_knife_angle: (a: number, b: number) => void;
-  readonly __wbg_get_knife_parry: (a: number) => number;
-  readonly __wbg_set_knife_parry: (a: number, b: number) => void;
-  readonly __wbg_get_knife_block: (a: number) => number;
-  readonly __wbg_set_knife_block: (a: number, b: number) => void;
-  readonly __wbg_get_knife_enchant: (a: number) => number;
-  readonly __wbg_set_knife_enchant: (a: number, b: number) => void;
-  readonly __wbg_enchant_free: (a: number) => void;
-  readonly __wbg_get_enchant_eff: (a: number) => number;
-  readonly __wbg_set_enchant_eff: (a: number, b: number) => void;
-  readonly __wbg_get_knife_damage: (a: number) => number;
-  readonly __wbg_set_knife_damage: (a: number, b: number) => void;
   readonly __wbg_cell_free: (a: number) => void;
   readonly __wbg_get_cell_x: (a: number) => number;
   readonly __wbg_set_cell_x: (a: number, b: number) => void;
@@ -417,28 +469,36 @@ export interface InitOutput {
   readonly __wbg_set_world_h: (a: number, b: number) => void;
   readonly __wbg_get_world_w: (a: number) => number;
   readonly __wbg_set_world_w: (a: number, b: number) => void;
-  readonly world_new: (a: number, b: number) => number;
-  readonly world_start: (a: number, b: number) => void;
+  readonly world_new: (a: number, b: number, c: number) => number;
+  readonly world_start: (a: number) => void;
   readonly world_get_vec: (a: number) => number;
   readonly world_get_vec_len: (a: number) => number;
   readonly world_get_indices: (a: number) => number;
   readonly world_get_indices_len: (a: number) => number;
   readonly world_print: (a: number, b: number, c: number) => void;
-  readonly world_tick: (a: number) => void;
+  readonly world_tick: (a: number, b: number, c: number, d: number) => void;
   readonly world_to_update_map: (a: number) => number;
   readonly world_to_update_index: (a: number) => number;
   readonly world_get_h: (a: number, b: number, c: number) => number;
-  readonly world_add_entity: (a: number, b: number, c: number, d: number, e: number) => void;
-  readonly world_get_entity_len: (a: number) => number;
-  readonly world_get_entity: (a: number, b: number, c: number) => number;
+  readonly __wbg_entities_free: (a: number) => void;
+  readonly entities_get_i: (a: number, b: number) => number;
+  readonly entities_get_remove: (a: number, b: number, c: number) => number;
+  readonly entities_add_entity: (a: number, b: number, c: number, d: number, e: number) => void;
+  readonly __wbg_enemies_free: (a: number) => void;
+  readonly enemies_new: () => number;
+  readonly enemies_add_enemy: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+  readonly enemies_get_len: (a: number) => number;
+  readonly enemies_get_i: (a: number, b: number) => number;
   readonly __wbg_entity_represent_free: (a: number) => void;
   readonly __wbg_get_entity_represent_3: (a: number) => number;
   readonly __wbg_set_entity_represent_3: (a: number, b: number) => void;
   readonly __wbg_get_entity_represent_4: (a: number) => number;
   readonly __wbg_set_entity_represent_4: (a: number, b: number) => void;
+  readonly entities_get_len: (a: number) => number;
   readonly __wbg_get_entity_represent_0: (a: number) => number;
   readonly __wbg_get_entity_represent_1: (a: number) => number;
   readonly __wbg_get_entity_represent_2: (a: number) => number;
+  readonly entities_new: () => number;
   readonly __wbg_set_entity_represent_0: (a: number, b: number) => void;
   readonly __wbg_set_entity_represent_1: (a: number, b: number) => void;
   readonly __wbg_set_entity_represent_2: (a: number, b: number) => void;
@@ -491,6 +551,44 @@ export interface InitOutput {
   readonly player_dash: (a: number, b: number, c: number, d: number) => void;
   readonly player_is_dashing: (a: number) => number;
   readonly player_get_dash_deg: (a: number) => number;
+  readonly __wbg_entity_free: (a: number) => void;
+  readonly __wbg_get_entity_to_remove: (a: number) => number;
+  readonly __wbg_set_entity_to_remove: (a: number, b: number) => void;
+  readonly __wbg_get_entity_x: (a: number) => number;
+  readonly __wbg_set_entity_x: (a: number, b: number) => void;
+  readonly __wbg_get_entity_y: (a: number) => number;
+  readonly __wbg_set_entity_y: (a: number, b: number) => void;
+  readonly __wbg_get_entity_z: (a: number) => number;
+  readonly __wbg_set_entity_z: (a: number, b: number) => void;
+  readonly __wbg_get_entity_e: (a: number) => number;
+  readonly __wbg_set_entity_e: (a: number, b: number) => void;
+  readonly __wbg_get_entity_gold: (a: number) => number;
+  readonly __wbg_set_entity_gold: (a: number, b: number) => void;
+  readonly __wbg_get_entity_exp: (a: number) => number;
+  readonly __wbg_set_entity_exp: (a: number, b: number) => void;
+  readonly __wbg_get_entity_knife: (a: number) => number;
+  readonly __wbg_set_entity_knife: (a: number, b: number) => void;
+  readonly entity_new: (a: number, b: number, c: number) => number;
+  readonly __wbg_knife_free: (a: number) => void;
+  readonly __wbg_get_knife_angle: (a: number) => number;
+  readonly __wbg_set_knife_angle: (a: number, b: number) => void;
+  readonly __wbg_get_knife_block: (a: number) => number;
+  readonly __wbg_set_knife_block: (a: number, b: number) => void;
+  readonly __wbg_get_knife_enchant: (a: number) => number;
+  readonly __wbg_set_knife_enchant: (a: number, b: number) => void;
+  readonly __wbg_enchant_free: (a: number) => void;
+  readonly __wbg_get_enchant_eff: (a: number) => number;
+  readonly __wbg_set_enchant_eff: (a: number, b: number) => void;
+  readonly __wbg_get_knife_weight: (a: number) => number;
+  readonly __wbg_get_knife_speed: (a: number) => number;
+  readonly __wbg_get_knife_radius: (a: number) => number;
+  readonly __wbg_get_knife_parry: (a: number) => number;
+  readonly __wbg_get_knife_damage: (a: number) => number;
+  readonly __wbg_set_knife_weight: (a: number, b: number) => void;
+  readonly __wbg_set_knife_speed: (a: number, b: number) => void;
+  readonly __wbg_set_knife_radius: (a: number, b: number) => void;
+  readonly __wbg_set_knife_parry: (a: number, b: number) => void;
+  readonly __wbg_set_knife_damage: (a: number, b: number) => void;
   readonly __wbg_enemy_free: (a: number) => void;
   readonly __wbg_get_enemy_x: (a: number) => number;
   readonly __wbg_set_enemy_x: (a: number, b: number) => void;
@@ -498,6 +596,24 @@ export interface InitOutput {
   readonly __wbg_set_enemy_y: (a: number, b: number) => void;
   readonly __wbg_get_enemy_z: (a: number) => number;
   readonly __wbg_set_enemy_z: (a: number, b: number) => void;
+  readonly __wbg_get_enemy_tp: (a: number) => number;
+  readonly __wbg_set_enemy_tp: (a: number, b: number) => void;
+  readonly __wbg_get_enemy_lv: (a: number) => number;
+  readonly __wbg_set_enemy_lv: (a: number, b: number) => void;
+  readonly __wbg_get_enemy_hp: (a: number) => number;
+  readonly __wbg_set_enemy_hp: (a: number, b: number) => void;
+  readonly __wbg_get_enemy_max_hp: (a: number) => number;
+  readonly __wbg_set_enemy_max_hp: (a: number, b: number) => void;
+  readonly __wbg_get_enemy_sp: (a: number) => number;
+  readonly __wbg_set_enemy_sp: (a: number, b: number) => void;
+  readonly __wbg_get_enemy_max_sp: (a: number) => number;
+  readonly __wbg_set_enemy_max_sp: (a: number, b: number) => void;
+  readonly __wbg_get_enemy_attack_range: (a: number) => number;
+  readonly __wbg_set_enemy_attack_range: (a: number, b: number) => void;
+  readonly enemy_new: (a: number, b: number, c: number, d: number, e: number) => number;
+  readonly enemy_attack: (a: number) => number;
+  readonly enemy_take_damage: (a: number, b: number) => void;
+  readonly enemy_is_dead: (a: number) => number;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_add_to_stack_pointer: (a: number) => number;

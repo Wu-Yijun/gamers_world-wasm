@@ -1795,6 +1795,9 @@ function __wbg_get_imports() {
     imports.wbg.__wbg_alert_17cd6854ba42538c = function(arg0, arg1) {
         alert(getStringFromWasm0(arg0, arg1));
     };
+    imports.wbg.__wbg_addScreenValue_b7ca331e5a834d03 = function(arg0, arg1, arg2, arg3, arg4, arg5, arg6) {
+        addScreenValue(getStringFromWasm0(arg0, arg1), arg2, arg3, arg4, arg5, arg6);
+    };
     imports.wbg.__wbg_crypto_1d1f22824a6a080c = function(arg0) {
         const ret = getObject(arg0).crypto;
         return addHeapObject(ret);

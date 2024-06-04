@@ -17,6 +17,8 @@ const key_hold_threadhold = 100000;
 
 const fps_value = document.getElementById("fps-value");
 const frames_value = document.getElementById("frames-value");
+const mob_value = document.getElementById("mob-value");
+const entity_value = document.getElementById("entity-value");
 const info_dom = document.getElementById("info");
 
 let lastTime = Date.now();
@@ -32,6 +34,8 @@ function renderLoop() {
     fps_value.innerHTML = Math.round(1000 / (Date.now() - lastTime));
     lastTime = Date.now();
     frames_value.innerText = framesValue++;
+    mob_value.innerText = player.enemy.get_len();
+    entity_value.innerText = player.entity.get_len();
 
 
     game.world.tick(player.player, player.entity, player.enemy);

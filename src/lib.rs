@@ -16,6 +16,14 @@ extern "C" {
     // console log
     #[wasm_bindgen(js_namespace = console)]
     fn log(s: &str);
+
+    /// 在屏幕上输出信息
+    /// tp = 0 黑色正常字符
+    /// tp = 1 蓝色,怪物扣血
+    /// tp = 2 绿色, Miss
+    /// tp = 3 浅红色, 正常扣血
+    /// tp = 4 深红色大字, 暴击扣血
+    fn addScreenValue(value: &str, x: f32, y: f32, z: f32, ticks: isize, tp: isize);
 }
 
 #[derive(Debug)]
@@ -143,11 +151,9 @@ impl World {
         // randomly generate an entity
         // let mut rng = rand::thread_rng();
         if self.rng.gen_range(0..100) < 5 {
-            let x = (self.w - 1) as f32 / 4.0;
-            let y = (self.h - 1) as f32 / 4.0;
-            let x = self.rng.gen_range(-x..x);
-            let y = self.rng.gen_range(-y..y);
-            let lv = self.rng.gen_range(player.lv / 2 + 1..player.lv * 2);
+            let x = self.rng.gen_range(-10.0..10.0) + player.x;
+            let y = self.rng.gen_range(-10.0..10.0) + player.y;
+            let lv = self.rng.gen_range(player.lv / 2 + 1..player.lv + 5);
 
             // self.add_entity(x, y, z, e);
             enemy.add_enemy(self, x, y, 1, lv);

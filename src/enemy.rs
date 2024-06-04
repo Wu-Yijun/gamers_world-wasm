@@ -61,13 +61,13 @@ impl Enemy {
             v: (0.0, 0.0),
             tp,
             lv,
-            hp: 100.0,
+            hp: 10.0 * lv as f32,
             to_remove: false,
-            hp_max: 100.0,
-            sp: 100.0,
-            sp_max: 100.0,
-            atk: 10.0,
-            def: 5.0,
+            hp_max: 10.0 * lv as f32,
+            sp: 10.0 * lv as f32,
+            sp_max: 10.0 * lv as f32,
+            atk: 5.0 + lv as f32,
+            def: 3.0 + lv as f32 * 0.5,
             int: 10.0,
             speed: (1.0, 0.1),
             search_range: 10.0,
@@ -108,6 +108,8 @@ impl Enemy {
         self.v.1 *= -0.2;
         // self.v.0 *= -2.0;
         // self.v.1 *= -2.0;
+
+        crate::addScreenValue(&format!("{:.1?}", damage), self.x, self.y, self.z, 20, 1)
     }
 
     pub fn is_dead(&self) -> bool {
@@ -162,28 +164,31 @@ impl Enemy {
         // self.hate.0 = 10.0;
         self.hate_tick();
 
+        // 发现玩家且在攻击范围外, 如果可以攻击到玩家就不走了
         if self.search_tick.2 {
-            // 向玩家移动
-            // 处理加速度
-            let d1 = (dx * dx + dy * dy).sqrt();
-            let vx = self.speed.0 * dx / d1;
-            let vy = self.speed.0 * dy / d1;
-            let dvx = vx - self.v.0;
-            let dvy = vy - self.v.1;
-            let dv2 = dvx * dvx + dvy * dvy;
-            if dv2 <= self.speed.1 * self.speed.1 {
-                // 可以直接将速度变为期望速度
-                self.v.0 = vx;
-                self.v.1 = vy;
-            } else {
-                // 需要逐渐加速
-                let r = self.speed.1 / dv2.sqrt();
-                self.v.0 += dvx * r;
-                self.v.1 += dvy * r;
+            if d2 > self.attack_range * self.attack_range * 0.8 {
+                // 向玩家移动
+                // 处理加速度
+                let d1 = (dx * dx + dy * dy).sqrt();
+                let vx = self.speed.0 * dx / d1;
+                let vy = self.speed.0 * dy / d1;
+                let dvx = vx - self.v.0;
+                let dvy = vy - self.v.1;
+                let dv2 = dvx * dvx + dvy * dvy;
+                if dv2 <= self.speed.1 * self.speed.1 {
+                    // 可以直接将速度变为期望速度
+                    self.v.0 = vx;
+                    self.v.1 = vy;
+                } else {
+                    // 需要逐渐加速
+                    let r = self.speed.1 / dv2.sqrt();
+                    self.v.0 += dvx * r;
+                    self.v.1 += dvy * r;
+                }
+                // 速度和位移
+                self.x += self.v.0 * 0.05;
+                self.y += self.v.1 * 0.05;
             }
-            // 速度和位移
-            self.x += self.v.0 * 0.05;
-            self.y += self.v.1 * 0.05;
         } else {
             // 随机移动
             self.v.0 += self.speed.1 * (js_sys::Math::random() as f32 - 0.5) * 0.5;
@@ -216,8 +221,8 @@ impl Enemy {
         if self.attacking_tick.0 > 0 {
             self.attacking_tick.0 -= 1;
             // 我们可以设定, 攻击时, 速度降为原先的 1/5
-            self.v.0 *= 0.2;
-            self.v.1 *= 0.2;
+            self.v.0 = 0.0;
+            self.v.1 = 0.0;
         }
     }
 

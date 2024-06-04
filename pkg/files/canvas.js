@@ -65,6 +65,8 @@ export function render(trans_scale) {
 
     drawPlayer(scale);
 
+    drawValues(scale);
+
     drawUI();
 
 }
@@ -252,6 +254,56 @@ function drawPlayer(scale) {
                 ctx.rotate(3.14 - prog * 6.28)
                 ig && ctx.drawImage(ig, - sw / 2, - sh / 2, sw, sh);
             }
+        }
+    }
+
+}
+
+function drawValues(scale) {
+    const mat1 = player.webgl.getModelViewMatrix();
+    const mat2 = player.webgl.getProjectionMatrix();
+    const hei = ctx.canvas.height / 2;
+    const wei = ctx.canvas.width / 2;
+    ctx.resetTransform();
+    ctx.translate(wei, hei);
+
+    if (mat1 && mat2) {
+        for (let i = 0; i < screen_values.length; i++) {
+            let v = screen_values[i];
+            if (v.ticks < 0) {
+                screen_values.splice(i, 1);
+                i--;
+                continue;
+            }
+            v.ticks--;
+
+            let pos = glMatrix.vec4.fromValues(v.x, v.y, v.z, 1.0);
+            glMatrix.vec4.transformMat4(pos, pos, mat1);
+            glMatrix.vec4.transformMat4(pos, pos, mat2);
+            let x = pos[0] / pos[3] * wei;
+            let y = -pos[1] / pos[3] * hei;
+            let to_hide = pos[2] / pos[3];
+            if (to_hide > 1 || to_hide < 0) {
+                continue;
+            }
+
+            if (v.type == 0) {
+                ctx.fillStyle = 'black';
+                ctx.font = Math.round(player.ui * 2.5) + "px sans-serif";
+            }else if(v.type == 1){
+                ctx.fillStyle = 'blue';
+                ctx.font = Math.round(player.ui * 2.5) + "px sans-serif";
+            }else if(v.type == 2){
+                ctx.fillStyle = 'orange';
+                ctx.font = Math.round(player.ui * 2.5) + "px sans-serif";
+            }else if(v.type == 3){
+                ctx.fillStyle = '#f77';
+                ctx.font = Math.round(player.ui * 2.5) + "px sans-serif";
+            }else if(v.type == 4){
+                ctx.fillStyle = '#c33';
+                ctx.font = Math.round(player.ui * 5) + "px sans-serif";
+            }
+            ctx.fillText(v.value, x, y - scale * 50);
         }
     }
 

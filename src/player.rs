@@ -161,7 +161,7 @@ impl Player {
     }
 
     pub fn move_by(&mut self, dx: f32, dy: f32) -> String {
-        let r = (0.005 * (1.0 + self.agi * 0.1 + self.str * 0.3)) as f32;
+        let r = (0.007 * (1.0 + self.agi * 0.1 + self.str * 0.3)) as f32;
         if self.is_resting() {
             self.x += dx * r * 0.6;
             self.y += dy * r * 0.6;
@@ -258,7 +258,8 @@ impl Player {
             // 依等级差和幸运/敏捷等参数计算是否可以闪避
             let mut miss = 0.1 * 0.8f32.powf(enemy.lv as f32 + 1.0 - self.lv as f32).min(9.0);
             miss = 1.0 - (1.0 - miss) / (1.0 + self.luk * 0.01) / (1.0 + self.agi * 0.005);
-            if self.sp as u32 > enemy.lv && rand::random::<f32>() > miss {
+            if (self.sp as u32) < enemy.lv || rand::random::<f32>() > miss {
+                let mut is_crit = false;
                 // 没有闪掉, 开始计算伤害
                 // 有最小一点基础伤害, 暴怒时伤害翻倍
                 let mut damage = (enemy.atk - self.def).max(1.0);
@@ -271,6 +272,7 @@ impl Player {
                     damage *= 1.0 + 4.0 / (1.0 + self.str * 0.1) / (1.0 + self.def * 0.1);
                     // 消减大量sp
                     self.sp = (self.sp - damage * 0.8).max(0.0);
+                    is_crit = true;
                 }
                 // 根据当前的 sp 决定减伤大小, 不低于 1
                 damage = (damage - (1.0 + self.def * 0.1) * (0.2 + self.sp * 0.05)).max(1.0);
@@ -278,15 +280,22 @@ impl Player {
                 damage *= (enemy.lv as f32 / self.lv as f32).sqrt();
                 self.hp -= damage;
                 self.sp -= damage * 0.4;
-                crate::log(&format!(
-                    "miss rate:{}, crit rate: {},  damage: {}",
-                    miss, crit, damage
-                ));
+
+                crate::addScreenValue(
+                    &format!("{:.1?}", damage),
+                    (self.x + enemy.x) * 0.5,
+                    (self.y + enemy.y) * 0.5,
+                    (self.z + enemy.z) * 0.5,
+                    15,
+                    if is_crit { 4 } else { 3 },
+                );
             } else {
                 // 闪掉了攻击
                 self.sp -= (enemy.lv as f32).sqrt();
                 // 对方 sp 减少
                 enemy.sp -= (enemy.lv as f32).sqrt() / 2.0 + (self.lv as f32).sqrt() + 5.0;
+
+                crate::addScreenValue("Miss", self.x, self.y, self.z, 10, 2);
             }
         }
         return d2;
@@ -308,7 +317,7 @@ impl Player {
                 // able to attack
                 for e in enemies {
                     let dx = self.x - e.x;
-                    let dy = self.x - e.x;
+                    let dy = self.y - e.y;
                     if dx * dx + dy * dy < self.attack_range * self.attack_range {
                         // e.hp -= 4.0 * ((self.lv as f32 + 5.0) / (e.lv as f32 + 7.0));
                         e.take_damage(4.0 * ((self.lv as f32 + 5.0) / (e.lv as f32 + 7.0)));

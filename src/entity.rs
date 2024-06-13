@@ -11,7 +11,6 @@ pub struct Entity {
     pub gold: u32,
     pub exp: f32,
     pub knife: Knife,
-
 }
 
 impl Default for Entity {
@@ -42,6 +41,9 @@ impl Entity {
             knife: Knife::default(),
             to_remove: false,
         }
+    }
+    pub fn get_type(&self) -> i32 {
+        self.e as i32
     }
 }
 

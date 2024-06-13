@@ -1,3 +1,4 @@
+import * as mat4 from "https://cdn.jsdelivr.net/npm/gl-matrix@3.4.2/dist/esm/mat4.js"
 
 // Vertex shader program
 const vsSource = `
@@ -48,8 +49,7 @@ const data = {
         distance: 10,
         rotate: 0,
     },
-    projectionMatrix: null,
-    modelViewMatrix: null,
+    matrix: mat4.create(),
 }
 
 
@@ -108,20 +108,20 @@ function updateView() {
     const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
     const zNear = 0.1;
     const zFar = 1000.0;
-    const projectionMatrix = glMatrix.mat4.create();
+    const projectionMatrix = mat4.create();
 
-    // Note: glmatrix.js always has the first argument as the destination to receive the result.
-    glMatrix.mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
+    // Note: mat4 always has the first argument as the destination to receive the result.
+    mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
 
     // Set the drawing position to the identity point, which is the center of the scene.
-    const modelViewMatrix = glMatrix.mat4.create();
+    const modelViewMatrix = mat4.create();
 
     // Move the drawing position to where we want to start drawing the square.
-    // glMatrix.mat4.lookAt(modelViewMatrix, [0, -2, 3], [0, 0, 0], [0, 1, 0]);
-    glMatrix.mat4.lookAt(modelViewMatrix, [0, -2 * data.trans.distance, 3 * data.trans.distance], [0, 0, 0], [0, 1, 0]);
+    // mat4.lookAt(modelViewMatrix, [0, -2, 3], [0, 0, 0], [0, 1, 0]);
+    mat4.lookAt(modelViewMatrix, [0, -2 * data.trans.distance, 3 * data.trans.distance], [0, 0, 0], [0, 1, 0]);
     // console.log(modelViewMatrix);
-    glMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, data.trans.rotate, [0, 0, 1]);
-    glMatrix.mat4.translate(modelViewMatrix, modelViewMatrix, [-data.player.x, -data.player.y, -data.player.z]);
+    mat4.rotate(modelViewMatrix, modelViewMatrix, data.trans.rotate, [0, 0, 1]);
+    mat4.translate(modelViewMatrix, modelViewMatrix, [-data.player.x, -data.player.y, -data.player.z]);
     // console.log(modelViewMatrix);
 
     // Set the shader uniforms
@@ -134,8 +134,7 @@ function updateView() {
         false,
         modelViewMatrix);
 
-    data.projectionMatrix = projectionMatrix;
-    data.modelViewMatrix = modelViewMatrix;
+    mat4.multiply(data.matrix, projectionMatrix, modelViewMatrix);
 }
 
 // window.onload = main;
@@ -290,9 +289,6 @@ export function updateIndex(indices) {
     data.vertexCount = indices.length;
 }
 
-export function getModelViewMatrix(){
-    return data.modelViewMatrix;
-}
-export function getProjectionMatrix(){
-    return data.projectionMatrix;
+export function getMatrix() {
+    return data.matrix;
 }

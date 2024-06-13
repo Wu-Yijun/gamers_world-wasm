@@ -153,7 +153,7 @@ impl Player {
         }
 
         if self.hp < 0.0 {
-            alert("You died!");
+            // alert("You died!");
             self.hp = 0.2 * self.hp_max;
         }
 

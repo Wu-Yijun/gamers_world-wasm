@@ -4,6 +4,20 @@ use crate::player::{self, Player};
 
 #[derive(Debug, Clone, Copy)]
 #[wasm_bindgen]
+pub struct EnemyInfo {
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
+    pub hp: f32,
+    pub sp: f32,
+    pub tp: i32,
+    pub lv: u32,
+    pub rest: f32,
+    pub atk: f32,
+}
+
+#[derive(Debug, Clone, Copy)]
+#[wasm_bindgen]
 pub struct Enemy {
     pub x: f32,
     pub y: f32,
@@ -114,6 +128,24 @@ impl Enemy {
 
     pub fn is_dead(&self) -> bool {
         self.hp <= 0.0
+    }
+
+    pub fn get_info(&self) -> EnemyInfo {
+        EnemyInfo {
+            x: self.x,
+            y: self.y,
+            z: self.z,
+            hp: self.hp / self.hp_max,
+            sp: self.sp / self.sp_max,
+            tp: self.tp,
+            lv: self.lv,
+            rest: if self.is_resting() {
+                self.get_resting_progress()
+            } else {
+                2.0
+            },
+            atk: self.get_attacking(),
+        }
     }
 }
 

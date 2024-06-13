@@ -1,3 +1,4 @@
+import * as vec4 from "https://cdn.jsdelivr.net/npm/gl-matrix@3.4.2/dist/esm/vec4.js"
 import { Enemies, Entities, Player, World } from "./gamers_world_wasm.js";
 
 const myCanvas2D = document.getElementById('game2d');
@@ -35,16 +36,42 @@ export const player = {
     },
 
     mobs: {
+        'hp': 40,
         '1': {
-            res: 'm1',
-            angry: 'm1a',
-            weapon: 'm1h',
-            w: 40,
-            h: 70,
+            // res: 'm1',
+            res: 'A1',
+            // angry: 'm1a',
+            angry: 'A3',
+            // weapon: 'm1h',
+            weapon: 'A2',
+            // w: 40,
+            // h: 70,
+            size: 70,
             bar: 50,
         }
-    }
+    },
+
+    draw_entity: [{
+        pos: [0.0, 0.0, 1.0, 1.0],
+        atlas: [0.0, 0.0, 1.0, 1.0],
+        alian: 0,
+        rotate: 0.5,
+    }],
 };
+
+/**
+ * get the position of x,y,w,h of name in atlas
+ * @param {String} name 
+ * @returns {Array<Number>} position
+ */
+function atlas_pos(name) {
+    return [
+        (parseInt(name[1]) - 1) / 8.0,
+        (name.charCodeAt(0) - 'A'.charCodeAt(0)) / 8.0,
+        1.0 / 8.0,
+        1.0 / 8.0
+    ];
+}
 
 
 export function render(trans_scale) {
@@ -57,6 +84,8 @@ export function render(trans_scale) {
     ctxS.clearRect(0, 0, ctxS.canvas.width, ctxS.canvas.height);
     ctxS.translate(ctx.canvas.width / 2, ctx.canvas.height / 2);
 
+    // clear
+    player.draw_entity.length = 0;
 
     // Draw the entities
     drawEntity(scale);
@@ -65,15 +94,15 @@ export function render(trans_scale) {
 
     drawPlayer(scale);
 
-    drawValues(scale);
+    // drawValues(scale);
 
     drawUI();
 
 }
 
+
 function drawEntity(scale) {
-    const mat1 = player.webgl.getModelViewMatrix();
-    const mat2 = player.webgl.getProjectionMatrix();
+    const mat = player.webgl.getMatrix();
     const hei = ctx.canvas.height / 2;
     const wei = ctx.canvas.width / 2;
     const gh = 17 * scale;
@@ -81,33 +110,32 @@ function drawEntity(scale) {
     const kh = 13 * scale;
     const kw = 30 * scale;
 
-    if (mat1 && mat2) {
+    if (mat) {
         // 只需要 位置 和id 即可
         let num = player.entity.get_len();
         for (let i = 0; i < num; i++) {
             const entity = player.entity.get_remove(i, player.player);
-            let pos = glMatrix.vec4.fromValues(entity[0], entity[1], entity[2], 1.0);
-            glMatrix.vec4.transformMat4(pos, pos, mat1);
-            glMatrix.vec4.transformMat4(pos, pos, mat2);
+            let pos = vec4.fromValues(entity.x, entity.y, entity.z, 1.0);
+            vec4.transformMat4(pos, pos, mat);
 
             let x = pos[0] / pos[3] * wei;
             let y = -pos[1] / pos[3] * hei;
             let to_hide = pos[2] / pos[3];
 
-            if (entity[4]) {
-                data.removed_entity.push({ x: x, y: y, tick: 20, type: entity[3] });
+            if (entity.to_remove) {
+                data.removed_entity.push({ x: x, y: y, tick: 20, type: entity.get_type() });
                 continue;
             }
             if (to_hide > 1 || to_hide < 0) {
                 continue;
             }
-            if (entity[3] == 1) { // Gold
+            if (entity.get_type() == 1) { // Gold
                 let img = player.res.gold;
                 img && ctx.drawImage(img, x - gw / 2, y - gh, gw, gh);
                 ctxS.beginPath();
                 ctxS.ellipse(x, y, 6 * scale, 3 * scale, 0, 0, 2 * Math.PI);
                 ctxS.fill();
-            } else if (entity[3] == 2) { //Knife
+            } else if (entity.get_type() == 2) { //Knife
                 let img = player.res.knife.k1;
                 img && ctx.drawImage(img, x - kw / 2, y - kh, kw, kh);
                 ctxS.beginPath();
@@ -142,19 +170,20 @@ function drawEntity(scale) {
 
 function drawMobs(scale) {
     // const ui = player.ui;
-    const mat1 = player.webgl.getModelViewMatrix();
-    const mat2 = player.webgl.getProjectionMatrix();
+    const mat = player.webgl.getMatrix();
     const hei = ctx.canvas.height / 2;
     const wei = ctx.canvas.width / 2;
 
-    if (mat1 && mat2) {
+    // 血条宽度
+    const gw = 40 * scale;
+
+    if (mat) {
         // 只需要 位置 和id 即可
         let num = player.enemy.get_len();
         for (let i = 0; i < num; i++) {
             const mob = player.enemy.get_i(i);
-            let pos = glMatrix.vec4.fromValues(mob.x, mob.y, mob.z, 1.0);
-            glMatrix.vec4.transformMat4(pos, pos, mat1);
-            glMatrix.vec4.transformMat4(pos, pos, mat2);
+            let pos = vec4.fromValues(mob.x, mob.y, mob.z, 1.0);
+            vec4.transformMat4(pos, pos, mat);
 
             let x = pos[0] / pos[3] * wei;
             let y = -pos[1] / pos[3] * hei;
@@ -164,55 +193,53 @@ function drawMobs(scale) {
                 continue;
             }
             const mob_type = player.mobs[mob.tp];
-            const gh = mob_type.h * scale;
+            const gh = mob_type.size * scale;
             const ghbar = mob_type.bar * scale;
-            const gw = mob_type.w * scale;
-            let img = player.res.monster && player.res.monster[mob_type.res];
-            if (mob.is_resting()) {
-                ctx.filter = 'grayscale(100%)';
-                img && ctx.drawImage(img, x - gw / 2, y - gh, gw, gh);
-                ctx.filter = 'grayscale(0%)';
-            } else if (mob.is_anger()) {
-                let img = player.res.monster && player.res.monster[mob_type.angry];
-                img && ctx.drawImage(img, x - gw / 2, y - gh, gw, gh);
+            // let img = player.res.monster && player.res.monster[mob_type.res];
+            // if (mob.is_resting()) {
+            //     ctx.filter = 'grayscale(100%)';
+            //     img && ctx.drawImage(img, x - gw / 2, y - gh, gw, gh);
+            //     ctx.filter = 'grayscale(0%)';
+            // } else if (mob.is_anger()) {
+            //     let img = player.res.monster && player.res.monster[mob_type.angry];
+            //     img && ctx.drawImage(img, x - gw / 2, y - gh, gw, gh);
+            // } else {
+            //     img && ctx.drawImage(img, x - gw / 2, y - gh, gw, gh);
+            // }
+            // // shadow
+            // ctxS.beginPath();
+            // ctxS.ellipse(x, y, gh / 4, gh / 7, 0, 0, 2 * Math.PI);
+            // ctxS.fill();
+
+            // if (mob.is_found()) {
+            // 在头顶绘制血条和体力条
+            ctx.fillStyle = player.colors.hp_max;
+            ctx.fillRect(x - gw / 2, y - ghbar - scale * 6, gw, scale * 2);
+            ctx.fillStyle = player.colors.hp;
+            ctx.fillRect(x - gw / 2, y - ghbar - scale * 6, gw * mob.hp, scale * 2);
+
+            ctx.fillStyle = player.colors.sp_max;
+            ctx.fillRect(x - gw / 2, y - ghbar - scale * 3, gw, scale * 2);
+            ctx.fillStyle = player.colors.sp;
+            if (mob.rest < 1.0) {
+                ctx.fillRect(x - gw / 2, y - ghbar - scale * 3, gw * (1 - mob.rest), scale * 2);
             } else {
-                img && ctx.drawImage(img, x - gw / 2, y - gh, gw, gh);
-            }
-            // shadow
-            ctxS.beginPath();
-            ctxS.ellipse(x, y, gw / 2.5, gh / 7, 0, 0, 2 * Math.PI);
-            ctxS.fill();
-
-            if (mob.is_found()) {
-                // 在头顶绘制血条和体力条
-                ctx.fillStyle = player.colors.hp_max;
-                ctx.fillRect(x - gw / 2, y - ghbar - scale * 6, gw, scale * 2);
-                ctx.fillStyle = player.colors.hp;
-                ctx.fillRect(x - gw / 2, y - ghbar - scale * 6, gw * mob.hp / mob.hp_max, scale * 2);
-
-                ctx.fillStyle = player.colors.sp_max;
-                ctx.fillRect(x - gw / 2, y - ghbar - scale * 3, gw, scale * 2);
-                ctx.fillStyle = player.colors.sp;
-                if (mob.is_resting()) {
-                    ctx.fillRect(x - gw / 2, y - ghbar - scale * 3, gw * (1 - mob.get_resting_progress()), scale * 2);
-                } else {
-                    ctx.fillRect(x - gw / 2, y - ghbar - scale * 3, gw * mob.sp / mob.sp_max, scale * 2);
-                }
-
-                // 在血条上方绘制等级
-                ctx.font = scale * 8 + "px sans-serif";
-                ctx.fillStyle = 'black';
-                ctx.fillText("Lv. " + mob.lv, x - scale * 6, y - ghbar - scale * 10)
-                // ctx.fill();
+                ctx.fillRect(x - gw / 2, y - ghbar - scale * 3, gw * mob.sp, scale * 2);
             }
 
-            let prog = mob.get_attacking();
-            if (prog > 0) {
-                let img = player.res.monster && player.res.monster[mob_type.weapon];
-                ctx.save();
-                ctx.rotate(prog - 1);
-                img && ctx.drawImage(img, x - gw / 2, y - gh, gw, gh);
-                ctx.restore();
+            // 在血条上方绘制等级
+            ctx.font = scale * 8 + "px sans-serif";
+            ctx.fillStyle = 'black';
+            ctx.fillText("Lv. " + mob.lv, x - scale * 6, y - ghbar - scale * 10)
+            // ctx.fill();
+            // }
+
+            if (mob.atk > 0) {
+                // let img = player.res.monster && player.res.monster[mob_type.weapon];
+                // ctx.save();
+                // ctx.rotate(prog - 1);
+                // img && ctx.drawImage(img, x - gw / 2, y - gh, gw, gh);
+                // ctx.restore();
             }
         }
     }
@@ -260,14 +287,15 @@ function drawPlayer(scale) {
 }
 
 function drawValues(scale) {
-    const mat1 = player.webgl.getModelViewMatrix();
-    const mat2 = player.webgl.getProjectionMatrix();
+    const mat = player.webgl.getMatrix();
     const hei = ctx.canvas.height / 2;
     const wei = ctx.canvas.width / 2;
     ctx.resetTransform();
     ctx.translate(wei, hei);
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = scale / 6;
 
-    if (mat1 && mat2) {
+    if (mat) {
         for (let i = 0; i < screen_values.length; i++) {
             let v = screen_values[i];
             if (v.ticks < 0) {
@@ -277,9 +305,8 @@ function drawValues(scale) {
             }
             v.ticks--;
 
-            let pos = glMatrix.vec4.fromValues(v.x, v.y, v.z, 1.0);
-            glMatrix.vec4.transformMat4(pos, pos, mat1);
-            glMatrix.vec4.transformMat4(pos, pos, mat2);
+            let pos = vec4.fromValues(v.x, v.y, v.z, 1.0);
+            vec4.transformMat4(pos, pos, mat);
             let x = pos[0] / pos[3] * wei;
             let y = -pos[1] / pos[3] * hei;
             let to_hide = pos[2] / pos[3];
@@ -290,19 +317,20 @@ function drawValues(scale) {
             if (v.type == 0) {
                 ctx.fillStyle = 'black';
                 ctx.font = Math.round(player.ui * 2.5) + "px sans-serif";
-            }else if(v.type == 1){
+            } else if (v.type == 1) {
                 ctx.fillStyle = 'blue';
                 ctx.font = Math.round(player.ui * 2.5) + "px sans-serif";
-            }else if(v.type == 2){
+            } else if (v.type == 2) {
                 ctx.fillStyle = 'orange';
                 ctx.font = Math.round(player.ui * 2.5) + "px sans-serif";
-            }else if(v.type == 3){
+            } else if (v.type == 3) {
                 ctx.fillStyle = '#f77';
                 ctx.font = Math.round(player.ui * 2.5) + "px sans-serif";
-            }else if(v.type == 4){
+            } else if (v.type == 4) {
                 ctx.fillStyle = '#c33';
                 ctx.font = Math.round(player.ui * 5) + "px sans-serif";
             }
+            ctx.strokeText(v.value, x, y - scale * 50);
             ctx.fillText(v.value, x, y - scale * 50);
         }
     }

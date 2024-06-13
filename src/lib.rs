@@ -8,7 +8,7 @@ use wasm_bindgen::prelude::*;
 mod entity;
 use entity::{Ent, Entity, Knife};
 mod enemy;
-use enemy::Enemy;
+use enemy::{Enemy, EnemyInfo};
 
 #[wasm_bindgen]
 extern "C" {
@@ -150,7 +150,19 @@ impl World {
     ) {
         // randomly generate an entity
         // let mut rng = rand::thread_rng();
-        if self.rng.gen_range(0..100) < 5 {
+        if self.rng.gen_range(0..100) < 100 {
+            let x = self.rng.gen_range(-10.0..10.0) + player.x;
+            let y = self.rng.gen_range(-10.0..10.0) + player.y;
+            let lv = self.rng.gen_range(player.lv / 2 + 1..player.lv + 5);
+
+            // self.add_entity(x, y, z, e);
+            enemy.add_enemy(self, x, y, 1, lv);
+            let x = self.rng.gen_range(-10.0..10.0) + player.x;
+            let y = self.rng.gen_range(-10.0..10.0) + player.y;
+            let lv = self.rng.gen_range(player.lv / 2 + 1..player.lv + 5);
+
+            // self.add_entity(x, y, z, e);
+            enemy.add_enemy(self, x, y, 1, lv);
             let x = self.rng.gen_range(-10.0..10.0) + player.x;
             let y = self.rng.gen_range(-10.0..10.0) + player.y;
             let lv = self.rng.gen_range(player.lv / 2 + 1..player.lv + 5);
@@ -292,7 +304,7 @@ impl Entities {
     pub fn get_i(&self, index: usize) -> Entity {
         self.0[index].clone()
     }
-    pub fn get_remove(&mut self, index: usize, player: &mut player::Player) -> Entity_Represent {
+    pub fn get_remove(&mut self, index: usize, player: &mut player::Player) -> Entity {
         let e = &mut self.0[index];
         let dx = e.x - player.x;
         let dy = e.y - player.y;
@@ -302,7 +314,7 @@ impl Entities {
             player.gold += e.gold;
             player.exp += e.exp;
         }
-        Entity_Represent(e.x, e.y, e.z, e.e as isize, e.to_remove)
+        e.clone()
     }
     pub fn add_entity(&mut self, x: f32, y: f32, z: f32, e: isize) {
         let mut et = Entity::new(x, y, z);
@@ -342,15 +354,15 @@ impl Enemies {
         self.0.len()
     }
     /// NOTE: this is a copied enemy, not a reference
-    pub fn get_i(&self, index: usize) -> Enemy {
-        self.0[index]
+    pub fn get_i(&self, index: usize) -> EnemyInfo {
+        self.0[index].get_info()
     }
 }
 
-/// Represents a single entity in the game.
-/// (x, y, z, type, to_remove)
-#[wasm_bindgen]
-pub struct Entity_Represent(pub f32, pub f32, pub f32, pub isize, pub bool);
+// /// Represents a single entity in the game.
+// /// (x, y, z, type, to_remove)
+// #[wasm_bindgen]
+// pub struct Entity_Represent(pub f32, pub f32, pub f32, pub isize, pub bool);
 
 #[test]
 fn test() {

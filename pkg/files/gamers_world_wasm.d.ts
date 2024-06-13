@@ -54,9 +54,9 @@ export class Enemies {
 /**
 * NOTE: this is a copied enemy, not a reference
 * @param {number} index
-* @returns {Enemy}
+* @returns {EnemyInfo}
 */
-  get_i(index: number): Enemy;
+  get_i(index: number): EnemyInfo;
 }
 /**
 */
@@ -104,6 +104,10 @@ export class Enemy {
 */
   is_dead(): boolean;
 /**
+* @returns {EnemyInfo}
+*/
+  get_info(): EnemyInfo;
+/**
 */
   atk: number;
 /**
@@ -150,6 +154,35 @@ export class Enemy {
 }
 /**
 */
+export class EnemyInfo {
+  free(): void;
+/**
+*/
+  hp: number;
+/**
+*/
+  lv: number;
+/**
+*/
+  rest: number;
+/**
+*/
+  sp: number;
+/**
+*/
+  tp: number;
+/**
+*/
+  x: number;
+/**
+*/
+  y: number;
+/**
+*/
+  z: number;
+}
+/**
+*/
 export class Entities {
   free(): void;
 /**
@@ -168,9 +201,9 @@ export class Entities {
 /**
 * @param {number} index
 * @param {Player} player
-* @returns {Entity_Represent}
+* @returns {Entity}
 */
-  get_remove(index: number, player: Player): Entity_Represent;
+  get_remove(index: number, player: Player): Entity;
 /**
 * @param {number} x
 * @param {number} y
@@ -190,6 +223,10 @@ export class Entity {
 * @returns {Entity}
 */
   static new(x: number, y: number, z: number): Entity;
+/**
+* @returns {number}
+*/
+  get_type(): number;
 /**
 */
   e: Ent;
@@ -214,28 +251,6 @@ export class Entity {
 /**
 */
   z: number;
-}
-/**
-* Represents a single entity in the game.
-* (x, y, z, type, to_remove)
-*/
-export class Entity_Represent {
-  free(): void;
-/**
-*/
-  0: number;
-/**
-*/
-  1: number;
-/**
-*/
-  2: number;
-/**
-*/
-  3: number;
-/**
-*/
-  4: boolean;
 }
 /**
 * 近战武器
@@ -528,19 +543,8 @@ export interface InitOutput {
   readonly enemies_new: () => number;
   readonly enemies_get_len: (a: number) => number;
   readonly enemies_get_i: (a: number, b: number) => number;
-  readonly __wbg_entity_represent_free: (a: number) => void;
-  readonly __wbg_get_entity_represent_3: (a: number) => number;
-  readonly __wbg_set_entity_represent_3: (a: number, b: number) => void;
-  readonly __wbg_get_entity_represent_4: (a: number) => number;
-  readonly __wbg_set_entity_represent_4: (a: number, b: number) => void;
   readonly entities_get_len: (a: number) => number;
-  readonly __wbg_get_entity_represent_0: (a: number) => number;
-  readonly __wbg_get_entity_represent_1: (a: number) => number;
-  readonly __wbg_get_entity_represent_2: (a: number) => number;
   readonly entities_new: () => number;
-  readonly __wbg_set_entity_represent_0: (a: number, b: number) => void;
-  readonly __wbg_set_entity_represent_1: (a: number, b: number) => void;
-  readonly __wbg_set_entity_represent_2: (a: number, b: number) => void;
   readonly __wbg_player_free: (a: number) => void;
   readonly __wbg_get_player_x: (a: number) => number;
   readonly __wbg_set_player_x: (a: number, b: number) => void;
@@ -595,6 +599,23 @@ export interface InitOutput {
   readonly player_get_attack_prog: (a: number) => number;
   readonly player_is_resting: (a: number) => number;
   readonly player_get_resting_progress: (a: number) => number;
+  readonly __wbg_enemyinfo_free: (a: number) => void;
+  readonly __wbg_get_enemyinfo_x: (a: number) => number;
+  readonly __wbg_set_enemyinfo_x: (a: number, b: number) => void;
+  readonly __wbg_get_enemyinfo_y: (a: number) => number;
+  readonly __wbg_set_enemyinfo_y: (a: number, b: number) => void;
+  readonly __wbg_get_enemyinfo_z: (a: number) => number;
+  readonly __wbg_set_enemyinfo_z: (a: number, b: number) => void;
+  readonly __wbg_get_enemyinfo_hp: (a: number) => number;
+  readonly __wbg_set_enemyinfo_hp: (a: number, b: number) => void;
+  readonly __wbg_get_enemyinfo_sp: (a: number) => number;
+  readonly __wbg_set_enemyinfo_sp: (a: number, b: number) => void;
+  readonly __wbg_get_enemyinfo_tp: (a: number) => number;
+  readonly __wbg_set_enemyinfo_tp: (a: number, b: number) => void;
+  readonly __wbg_get_enemyinfo_lv: (a: number) => number;
+  readonly __wbg_set_enemyinfo_lv: (a: number, b: number) => void;
+  readonly __wbg_get_enemyinfo_rest: (a: number) => number;
+  readonly __wbg_set_enemyinfo_rest: (a: number, b: number) => void;
   readonly __wbg_enemy_free: (a: number) => void;
   readonly __wbg_get_enemy_x: (a: number) => number;
   readonly __wbg_set_enemy_x: (a: number, b: number) => void;
@@ -633,6 +654,7 @@ export interface InitOutput {
   readonly enemy_get_resting_progress: (a: number) => number;
   readonly enemy_take_damage: (a: number, b: number) => void;
   readonly enemy_is_dead: (a: number) => number;
+  readonly enemy_get_info: (a: number) => number;
   readonly __wbg_entity_free: (a: number) => void;
   readonly __wbg_get_entity_to_remove: (a: number) => number;
   readonly __wbg_set_entity_to_remove: (a: number, b: number) => void;
@@ -661,6 +683,7 @@ export interface InitOutput {
   readonly __wbg_enchant_free: (a: number) => void;
   readonly __wbg_get_enchant_eff: (a: number) => number;
   readonly __wbg_set_enchant_eff: (a: number, b: number) => void;
+  readonly entity_get_type: (a: number) => number;
   readonly __wbg_get_knife_weight: (a: number) => number;
   readonly __wbg_get_knife_speed: (a: number) => number;
   readonly __wbg_get_knife_radius: (a: number) => number;

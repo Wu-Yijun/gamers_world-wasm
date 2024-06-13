@@ -5,7 +5,7 @@ const webgl = await import("./webgl.js");
 const wasm = await initSync();
 const canvas = await import("./canvas.js");
 
-const myCanvas = document.getElementById('game');
+const myCanvas = document.getElementById('game_background');
 const gl = myCanvas.getContext('webgl2');
 // const myCanvas2D = document.getElementById('game2d');
 // const ctx = myCanvas2D.getContext('2d');

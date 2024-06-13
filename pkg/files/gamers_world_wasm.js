@@ -381,11 +381,11 @@ export class Enemies {
     /**
     * NOTE: this is a copied enemy, not a reference
     * @param {number} index
-    * @returns {Enemy}
+    * @returns {EnemyInfo}
     */
     get_i(index) {
         const ret = wasm.enemies_get_i(this.__wbg_ptr, index);
-        return Enemy.__wrap(ret);
+        return EnemyInfo.__wrap(ret);
     }
 }
 
@@ -668,6 +668,145 @@ export class Enemy {
         const ret = wasm.enemy_is_dead(this.__wbg_ptr);
         return ret !== 0;
     }
+    /**
+    * @returns {EnemyInfo}
+    */
+    get_info() {
+        const ret = wasm.enemy_get_info(this.__wbg_ptr);
+        return EnemyInfo.__wrap(ret);
+    }
+}
+
+const EnemyInfoFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_enemyinfo_free(ptr >>> 0));
+/**
+*/
+export class EnemyInfo {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(EnemyInfo.prototype);
+        obj.__wbg_ptr = ptr;
+        EnemyInfoFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        EnemyInfoFinalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_enemyinfo_free(ptr);
+    }
+    /**
+    * @returns {number}
+    */
+    get x() {
+        const ret = wasm.__wbg_get_enemyinfo_x(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * @param {number} arg0
+    */
+    set x(arg0) {
+        wasm.__wbg_set_enemyinfo_x(this.__wbg_ptr, arg0);
+    }
+    /**
+    * @returns {number}
+    */
+    get y() {
+        const ret = wasm.__wbg_get_enemyinfo_y(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * @param {number} arg0
+    */
+    set y(arg0) {
+        wasm.__wbg_set_enemyinfo_y(this.__wbg_ptr, arg0);
+    }
+    /**
+    * @returns {number}
+    */
+    get z() {
+        const ret = wasm.__wbg_get_enemyinfo_z(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * @param {number} arg0
+    */
+    set z(arg0) {
+        wasm.__wbg_set_enemyinfo_z(this.__wbg_ptr, arg0);
+    }
+    /**
+    * @returns {number}
+    */
+    get hp() {
+        const ret = wasm.__wbg_get_enemyinfo_hp(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * @param {number} arg0
+    */
+    set hp(arg0) {
+        wasm.__wbg_set_enemyinfo_hp(this.__wbg_ptr, arg0);
+    }
+    /**
+    * @returns {number}
+    */
+    get sp() {
+        const ret = wasm.__wbg_get_enemyinfo_sp(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * @param {number} arg0
+    */
+    set sp(arg0) {
+        wasm.__wbg_set_enemyinfo_sp(this.__wbg_ptr, arg0);
+    }
+    /**
+    * @returns {number}
+    */
+    get tp() {
+        const ret = wasm.__wbg_get_enemyinfo_tp(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * @param {number} arg0
+    */
+    set tp(arg0) {
+        wasm.__wbg_set_enemyinfo_tp(this.__wbg_ptr, arg0);
+    }
+    /**
+    * @returns {number}
+    */
+    get lv() {
+        const ret = wasm.__wbg_get_enemyinfo_lv(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+    * @param {number} arg0
+    */
+    set lv(arg0) {
+        wasm.__wbg_set_enemyinfo_lv(this.__wbg_ptr, arg0);
+    }
+    /**
+    * @returns {number}
+    */
+    get rest() {
+        const ret = wasm.__wbg_get_enemyinfo_rest(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * @param {number} arg0
+    */
+    set rest(arg0) {
+        wasm.__wbg_set_enemyinfo_rest(this.__wbg_ptr, arg0);
+    }
 }
 
 const EntitiesFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -721,12 +860,12 @@ export class Entities {
     /**
     * @param {number} index
     * @param {Player} player
-    * @returns {Entity_Represent}
+    * @returns {Entity}
     */
     get_remove(index, player) {
         _assertClass(player, Player);
         const ret = wasm.entities_get_remove(this.__wbg_ptr, index, player.__wbg_ptr);
-        return Entity_Represent.__wrap(ret);
+        return Entity.__wrap(ret);
     }
     /**
     * @param {number} x
@@ -881,100 +1020,12 @@ export class Entity {
         const ret = wasm.entity_new(x, y, z);
         return Entity.__wrap(ret);
     }
-}
-
-const Entity_RepresentFinalization = (typeof FinalizationRegistry === 'undefined')
-    ? { register: () => {}, unregister: () => {} }
-    : new FinalizationRegistry(ptr => wasm.__wbg_entity_represent_free(ptr >>> 0));
-/**
-* Represents a single entity in the game.
-* (x, y, z, type, to_remove)
-*/
-export class Entity_Represent {
-
-    static __wrap(ptr) {
-        ptr = ptr >>> 0;
-        const obj = Object.create(Entity_Represent.prototype);
-        obj.__wbg_ptr = ptr;
-        Entity_RepresentFinalization.register(obj, obj.__wbg_ptr, obj);
-        return obj;
-    }
-
-    __destroy_into_raw() {
-        const ptr = this.__wbg_ptr;
-        this.__wbg_ptr = 0;
-        Entity_RepresentFinalization.unregister(this);
-        return ptr;
-    }
-
-    free() {
-        const ptr = this.__destroy_into_raw();
-        wasm.__wbg_entity_represent_free(ptr);
-    }
     /**
     * @returns {number}
     */
-    get 0() {
-        const ret = wasm.__wbg_get_cell_x(this.__wbg_ptr);
+    get_type() {
+        const ret = wasm.__wbg_get_entity_e(this.__wbg_ptr);
         return ret;
-    }
-    /**
-    * @param {number} arg0
-    */
-    set 0(arg0) {
-        wasm.__wbg_set_cell_x(this.__wbg_ptr, arg0);
-    }
-    /**
-    * @returns {number}
-    */
-    get 1() {
-        const ret = wasm.__wbg_get_cell_y(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-    * @param {number} arg0
-    */
-    set 1(arg0) {
-        wasm.__wbg_set_cell_y(this.__wbg_ptr, arg0);
-    }
-    /**
-    * @returns {number}
-    */
-    get 2() {
-        const ret = wasm.__wbg_get_cell_z(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-    * @param {number} arg0
-    */
-    set 2(arg0) {
-        wasm.__wbg_set_cell_z(this.__wbg_ptr, arg0);
-    }
-    /**
-    * @returns {number}
-    */
-    get 3() {
-        const ret = wasm.__wbg_get_entity_represent_3(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-    * @param {number} arg0
-    */
-    set 3(arg0) {
-        wasm.__wbg_set_entity_represent_3(this.__wbg_ptr, arg0);
-    }
-    /**
-    * @returns {boolean}
-    */
-    get 4() {
-        const ret = wasm.__wbg_get_entity_represent_4(this.__wbg_ptr);
-        return ret !== 0;
-    }
-    /**
-    * @param {boolean} arg0
-    */
-    set 4(arg0) {
-        wasm.__wbg_set_entity_represent_4(this.__wbg_ptr, arg0);
     }
 }
 
@@ -1791,9 +1842,6 @@ function __wbg_get_imports() {
     };
     imports.wbg.__wbindgen_object_drop_ref = function(arg0) {
         takeObject(arg0);
-    };
-    imports.wbg.__wbg_alert_17cd6854ba42538c = function(arg0, arg1) {
-        alert(getStringFromWasm0(arg0, arg1));
     };
     imports.wbg.__wbg_addScreenValue_b7ca331e5a834d03 = function(arg0, arg1, arg2, arg3, arg4, arg5, arg6) {
         addScreenValue(getStringFromWasm0(arg0, arg1), arg2, arg3, arg4, arg5, arg6);
